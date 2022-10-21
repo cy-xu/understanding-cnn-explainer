@@ -1,13 +1,15 @@
-Chengyuan (CY) and Navya's plan:
+## Chengyuan (CY) and Navya's plan:
 
 1. Learn/refresh javascript and a number of frameworks/packages used to build CNN Explainer.
 2. Dive into the project's code to understand its implementation.
 3. Identify obstacles and limitations to decide the direction to further develop/improve on this work.
 4. Implement our ideas and deliver.
 
-Ongoing tasks:
+## Progress tracking:
 
-Navya (comment branch): going through code to leave comments for questions and understanding components; [Week 4 Pull request](https://github.com/cy-xu/understanding-cnn-explainer/pull/1);
+### Week 4 (Oct 17-21)
+
+Navya (comment branch): going through code to leave comments for questions and understanding components; [Pull request](https://github.com/cy-xu/understanding-cnn-explainer/pull/1);
 
 Chengyuan (tweak branch): still learning JS, [taking notes](./notes/JavaScript_notes.md), looking into D3.js (used in this project for data visualization).
 
