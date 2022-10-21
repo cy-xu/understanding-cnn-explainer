@@ -6,6 +6,7 @@ Chengyuan (CY) and Navya's plan:
 4. Implement our ideas and deliver.
 
 Ongoing tasks:
+
 Navya (comment branch): going through code to leave comments for questions and understanding components; [Week 4 Pull request](https://github.com/cy-xu/understanding-cnn-explainer/pull/1);
 
 Chengyuan (tweak branch): still learning JS, [taking notes](./notes/JavaScript_notes.md), looking into D3.js (used in this project for data visualization).
