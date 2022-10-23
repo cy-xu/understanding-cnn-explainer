@@ -1411,6 +1411,8 @@
     transition: color 300ms ease-in-out;
   }
 
+  /* this :global pseudo selector makes the style 
+  globally available across different svelte components */
   :global(canvas) {
     image-rendering: crisp-edges;
   }

@@ -14039,7 +14039,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (1489:6) {#each imageOptions as image, i}
+    // (1491:6) {#each imageOptions as image, i}
     function create_each_block(ctx) {
     	let div;
     	let img;
@@ -14060,13 +14060,13 @@ var app = (function () {
     			attr_dev(img, "alt", "image option");
     			attr_dev(img, "title", img_title_value = /*image*/ ctx[83].class);
     			attr_dev(img, "data-imagename", img_data_imagename_value = /*image*/ ctx[83].file);
-    			attr_dev(img, "class", "svelte-1xz6y1p");
-    			add_location(img, file$f, 1494, 10, 47768);
-    			attr_dev(div, "class", "image-container svelte-1xz6y1p");
+    			attr_dev(img, "class", "svelte-3nozxc");
+    			add_location(img, file$f, 1496, 10, 47878);
+    			attr_dev(div, "class", "image-container svelte-3nozxc");
     			attr_dev(div, "data-imagename", div_data_imagename_value = /*image*/ ctx[83].file);
     			toggle_class(div, "inactive", /*selectedImage*/ ctx[7] !== /*image*/ ctx[83].file);
     			toggle_class(div, "disabled", /*disableControl*/ ctx[6]);
-    			add_location(div, file$f, 1489, 8, 47524);
+    			add_location(div, file$f, 1491, 8, 47634);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -14114,14 +14114,14 @@ var app = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(1489:6) {#each imageOptions as image, i}",
+    		source: "(1491:6) {#each imageOptions as image, i}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (1596:39) 
+    // (1598:39) 
     function create_if_block_3(ctx) {
     	let softmaxview;
     	let current;
@@ -14180,14 +14180,14 @@ var app = (function () {
     		block,
     		id: create_if_block_3.name,
     		type: "if",
-    		source: "(1596:39) ",
+    		source: "(1598:39) ",
     		ctx
     	});
 
     	return block;
     }
 
-    // (1591:67) 
+    // (1593:67) 
     function create_if_block_2(ctx) {
     	let poolview;
     	let current;
@@ -14237,14 +14237,14 @@ var app = (function () {
     		block,
     		id: create_if_block_2.name,
     		type: "if",
-    		source: "(1591:67) ",
+    		source: "(1593:67) ",
     		ctx
     	});
 
     	return block;
     }
 
-    // (1586:67) 
+    // (1588:67) 
     function create_if_block_1(ctx) {
     	let activationview;
     	let current;
@@ -14295,14 +14295,14 @@ var app = (function () {
     		block,
     		id: create_if_block_1.name,
     		type: "if",
-    		source: "(1586:67) ",
+    		source: "(1588:67) ",
     		ctx
     	});
 
     	return block;
     }
 
-    // (1578:2) {#if selectedNode.data && selectedNode.data.type === 'conv' && selectedNodeIndex != -1}
+    // (1580:2) {#if selectedNode.data && selectedNode.data.type === 'conv' && selectedNodeIndex != -1}
     function create_if_block$3(ctx) {
     	let convolutionview;
     	let current;
@@ -14363,7 +14363,7 @@ var app = (function () {
     		block,
     		id: create_if_block$3.name,
     		type: "if",
-    		source: "(1578:2) {#if selectedNode.data && selectedNode.data.type === 'conv' && selectedNodeIndex != -1}",
+    		source: "(1580:2) {#if selectedNode.data && selectedNode.data.type === 'conv' && selectedNodeIndex != -1}",
     		ctx
     	});
 
@@ -14507,84 +14507,84 @@ var app = (function () {
     			if (if_block) if_block.c();
     			t17 = space();
     			create_component(modal.$$.fragment);
-    			attr_dev(img, "class", "custom-image svelte-1xz6y1p");
+    			attr_dev(img, "class", "custom-image svelte-3nozxc");
     			if (!src_url_equal(img.src, img_src_value = "/assets/img/plus.svg")) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "plus button");
     			attr_dev(img, "title", "Add new input image");
     			attr_dev(img, "data-imagename", "custom");
-    			add_location(img, file$f, 1508, 10, 48231);
+    			add_location(img, file$f, 1510, 10, 48341);
     			attr_dev(i0, "class", "fas fa-circle fa-stack-2x");
-    			add_location(i0, file$f, 1516, 12, 48522);
+    			add_location(i0, file$f, 1518, 12, 48632);
     			attr_dev(i1, "class", "fas fa-pen fa-stack-1x fa-inverse");
-    			add_location(i1, file$f, 1517, 12, 48576);
-    			attr_dev(span0, "class", "fa-stack edit-icon svelte-1xz6y1p");
+    			add_location(i1, file$f, 1519, 12, 48686);
+    			attr_dev(span0, "class", "fa-stack edit-icon svelte-3nozxc");
     			toggle_class(span0, "hidden", /*customImageURL*/ ctx[12] === null);
-    			add_location(span0, file$f, 1514, 10, 48425);
-    			attr_dev(div0, "class", "image-container svelte-1xz6y1p");
+    			add_location(span0, file$f, 1516, 10, 48535);
+    			attr_dev(div0, "class", "image-container svelte-3nozxc");
     			attr_dev(div0, "data-imagename", div0_data_imagename_value = 'custom');
     			toggle_class(div0, "inactive", /*selectedImage*/ ctx[7] !== 'custom');
     			toggle_class(div0, "disabled", /*disableControl*/ ctx[6]);
-    			add_location(div0, file$f, 1502, 8, 47990);
+    			add_location(div0, file$f, 1504, 8, 48100);
     			attr_dev(i2, "class", "fas fa-crosshairs ");
-    			add_location(i2, file$f, 1526, 10, 48861);
+    			add_location(i2, file$f, 1528, 10, 48971);
     			attr_dev(span1, "class", "icon");
     			set_style(span1, "margin-right", "5px");
-    			add_location(span1, file$f, 1525, 8, 48804);
+    			add_location(span1, file$f, 1527, 8, 48914);
     			attr_dev(span2, "id", "hover-label-text");
-    			add_location(span2, file$f, 1528, 8, 48920);
-    			attr_dev(button0, "class", "button is-very-small is-link is-light svelte-1xz6y1p");
+    			add_location(span2, file$f, 1530, 8, 49030);
+    			attr_dev(button0, "class", "button is-very-small is-link is-light svelte-3nozxc");
     			attr_dev(button0, "id", "hover-label");
     			set_style(button0, "opacity", /*hoverInfo*/ ctx[4].show ? 1 : 0);
-    			add_location(button0, file$f, 1522, 6, 48667);
-    			attr_dev(div1, "class", "left-control svelte-1xz6y1p");
-    			add_location(div1, file$f, 1487, 4, 47450);
+    			add_location(button0, file$f, 1524, 6, 48777);
+    			attr_dev(div1, "class", "left-control svelte-3nozxc");
+    			add_location(div1, file$f, 1489, 4, 47560);
     			attr_dev(i3, "class", "fas fa-eye");
-    			add_location(i3, file$f, 1542, 10, 49281);
+    			add_location(i3, file$f, 1544, 10, 49391);
     			attr_dev(span3, "class", "icon");
-    			add_location(span3, file$f, 1541, 8, 49251);
+    			add_location(span3, file$f, 1543, 8, 49361);
     			attr_dev(span4, "id", "hover-label-text");
-    			add_location(span4, file$f, 1544, 8, 49332);
-    			attr_dev(button1, "class", "button is-very-small svelte-1xz6y1p");
+    			add_location(span4, file$f, 1546, 8, 49442);
+    			attr_dev(button1, "class", "button is-very-small svelte-3nozxc");
     			attr_dev(button1, "id", "detailed-button");
     			button1.disabled = /*disableControl*/ ctx[6];
     			toggle_class(button1, "is-activated", /*detailedMode*/ ctx[2]);
-    			add_location(button1, file$f, 1536, 6, 49059);
+    			add_location(button1, file$f, 1538, 6, 49169);
     			attr_dev(i4, "class", "fas fa-palette");
-    			add_location(i4, file$f, 1552, 10, 49560);
+    			add_location(i4, file$f, 1554, 10, 49670);
     			attr_dev(span5, "class", "icon is-left");
-    			add_location(span5, file$f, 1551, 8, 49522);
+    			add_location(span5, file$f, 1553, 8, 49632);
     			option0.__value = "local";
     			option0.value = option0.__value;
-    			add_location(option0, file$f, 1558, 12, 49756);
+    			add_location(option0, file$f, 1560, 12, 49866);
     			option1.__value = "module";
     			option1.value = option1.__value;
-    			add_location(option1, file$f, 1559, 12, 49804);
+    			add_location(option1, file$f, 1561, 12, 49914);
     			option2.__value = "global";
     			option2.value = option2.__value;
-    			add_location(option2, file$f, 1560, 12, 49855);
+    			add_location(option2, file$f, 1562, 12, 49965);
     			attr_dev(select, "id", "level-select");
     			select.disabled = /*disableControl*/ ctx[6];
-    			attr_dev(select, "class", "svelte-1xz6y1p");
+    			attr_dev(select, "class", "svelte-3nozxc");
     			if (/*selectedScaleLevel*/ ctx[0] === void 0) add_render_callback(() => /*select_change_handler*/ ctx[24].call(select));
-    			add_location(select, file$f, 1556, 10, 49647);
-    			attr_dev(div2, "class", "select svelte-1xz6y1p");
-    			add_location(div2, file$f, 1555, 8, 49616);
-    			attr_dev(div3, "class", "control is-very-small has-icons-left svelte-1xz6y1p");
+    			add_location(select, file$f, 1558, 10, 49757);
+    			attr_dev(div2, "class", "select svelte-3nozxc");
+    			add_location(div2, file$f, 1557, 8, 49726);
+    			attr_dev(div3, "class", "control is-very-small has-icons-left svelte-3nozxc");
     			attr_dev(div3, "title", "Change color scale range");
-    			add_location(div3, file$f, 1549, 6, 49422);
-    			attr_dev(div4, "class", "right-control svelte-1xz6y1p");
-    			add_location(div4, file$f, 1534, 4, 49024);
-    			attr_dev(div5, "class", "control-container svelte-1xz6y1p");
-    			add_location(div5, file$f, 1485, 2, 47413);
+    			add_location(div3, file$f, 1551, 6, 49532);
+    			attr_dev(div4, "class", "right-control svelte-3nozxc");
+    			add_location(div4, file$f, 1536, 4, 49134);
+    			attr_dev(div5, "class", "control-container svelte-3nozxc");
+    			add_location(div5, file$f, 1487, 2, 47523);
     			attr_dev(svg_1, "id", "cnn-svg");
-    			attr_dev(svg_1, "class", "svelte-1xz6y1p");
-    			add_location(svg_1, file$f, 1570, 4, 49993);
-    			attr_dev(div6, "class", "cnn svelte-1xz6y1p");
-    			add_location(div6, file$f, 1569, 2, 49971);
-    			attr_dev(div7, "class", "overview svelte-1xz6y1p");
-    			add_location(div7, file$f, 1482, 0, 47355);
+    			attr_dev(svg_1, "class", "svelte-3nozxc");
+    			add_location(svg_1, file$f, 1572, 4, 50103);
+    			attr_dev(div6, "class", "cnn svelte-3nozxc");
+    			add_location(div6, file$f, 1571, 2, 50081);
+    			attr_dev(div7, "class", "overview svelte-3nozxc");
+    			add_location(div7, file$f, 1484, 0, 47465);
     			attr_dev(div8, "id", "detailview");
-    			add_location(div8, file$f, 1576, 0, 50047);
+    			add_location(div8, file$f, 1578, 0, 50157);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -16209,6 +16209,7 @@ var app = (function () {
     }
 
     /* src/Explainer.svelte generated by Svelte v3.50.1 */
+
     const file$g = "src/Explainer.svelte";
 
     function create_fragment$g(ctx) {
@@ -16223,7 +16224,7 @@ var app = (function () {
     			create_component(overview.$$.fragment);
     			attr_dev(div, "id", "explainer");
     			attr_dev(div, "class", "svelte-1avhf6");
-    			add_location(div, file$g, 30, 0, 547);
+    			add_location(div, file$g, 37, 0, 747);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -16370,80 +16371,80 @@ var app = (function () {
     			img2 = element("img");
     			attr_dev(div0, "id", "logo-text");
     			attr_dev(div0, "class", "svelte-qob9ex");
-    			add_location(div0, file$h, 59, 4, 811);
+    			add_location(div0, file$h, 60, 4, 873);
     			attr_dev(feTurbulence, "type", "fractalNoise");
     			attr_dev(feTurbulence, "baseFrequency", "2");
     			attr_dev(feTurbulence, "numOctaves", "5");
     			attr_dev(feTurbulence, "stitchTiles", "stitch");
     			attr_dev(feTurbulence, "result", "f1");
-    			add_location(feTurbulence, file$h, 66, 5, 1020);
+    			add_location(feTurbulence, file$h, 67, 5, 1082);
     			attr_dev(feColorMatrix, "type", "matrix");
     			attr_dev(feColorMatrix, "values", "0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 -1.5 1.5");
     			attr_dev(feColorMatrix, "result", "f2");
-    			add_location(feColorMatrix, file$h, 68, 5, 1147);
+    			add_location(feColorMatrix, file$h, 69, 5, 1209);
     			attr_dev(feComposite, "operator", "in");
     			attr_dev(feComposite, "in2", "f2");
     			attr_dev(feComposite, "in", "SourceGraphic");
     			attr_dev(feComposite, "result", "f3");
-    			add_location(feComposite, file$h, 70, 5, 1273);
+    			add_location(feComposite, file$h, 71, 5, 1335);
     			attr_dev(filter, "x", "0%");
     			attr_dev(filter, "y", "0%");
     			attr_dev(filter, "width", "100%");
     			attr_dev(filter, "height", "100%");
     			attr_dev(filter, "filterUnits", "objectBoundingBox");
     			attr_dev(filter, "id", "chalk-texture");
-    			add_location(filter, file$h, 65, 4, 914);
-    			add_location(defs, file$h, 64, 3, 903);
+    			add_location(filter, file$h, 66, 4, 976);
+    			add_location(defs, file$h, 65, 3, 965);
     			attr_dev(text_1, "id", "svg-logo-tagline");
     			attr_dev(text_1, "class", "svelte-qob9ex");
-    			add_location(text_1, file$h, 76, 4, 1456);
+    			add_location(text_1, file$h, 77, 4, 1518);
     			attr_dev(g, "filter", "url(#chalk-texture)");
     			attr_dev(g, "transform", "translate(0, 35)");
-    			add_location(g, file$h, 75, 3, 1390);
+    			add_location(g, file$h, 76, 3, 1452);
     			attr_dev(svg, "width", "510px");
     			attr_dev(svg, "height", "50px");
-    			add_location(svg, file$h, 63, 2, 866);
+    			add_location(svg, file$h, 64, 2, 928);
     			attr_dev(div1, "id", "logo");
     			attr_dev(div1, "class", "svelte-qob9ex");
-    			add_location(div1, file$h, 58, 2, 791);
+    			add_location(div1, file$h, 59, 2, 853);
     			if (!src_url_equal(img0.src, img0_src_value = "/assets/img/pdf.png")) attr_dev(img0, "src", img0_src_value);
     			attr_dev(img0, "alt", "pdf icon");
     			attr_dev(img0, "class", "svelte-qob9ex");
-    			add_location(img0, file$h, 87, 4, 1722);
+    			add_location(img0, file$h, 88, 4, 1784);
     			attr_dev(a0, "target", "_blank");
     			attr_dev(a0, "href", "https://arxiv.org/abs/2004.15004");
     			attr_dev(a0, "class", "svelte-qob9ex");
-    			add_location(a0, file$h, 86, 3, 1658);
+    			add_location(a0, file$h, 87, 3, 1720);
     			attr_dev(div2, "class", "icon svelte-qob9ex");
     			attr_dev(div2, "title", "Research paper");
-    			add_location(div2, file$h, 85, 2, 1613);
+    			add_location(div2, file$h, 86, 2, 1675);
     			if (!src_url_equal(img1.src, img1_src_value = "/assets/img/youtube.png")) attr_dev(img1, "src", img1_src_value);
     			attr_dev(img1, "alt", "youtube icon");
     			attr_dev(img1, "class", "svelte-qob9ex");
-    			add_location(img1, file$h, 93, 4, 1901);
+    			add_location(img1, file$h, 94, 4, 1963);
     			attr_dev(a1, "target", "_blank");
     			attr_dev(a1, "href", "https://youtu.be/HnWIHWFbuUQ");
     			attr_dev(a1, "class", "svelte-qob9ex");
-    			add_location(a1, file$h, 92, 3, 1841);
+    			add_location(a1, file$h, 93, 3, 1903);
     			attr_dev(div3, "class", "icon svelte-qob9ex");
     			attr_dev(div3, "title", "Demo video");
-    			add_location(div3, file$h, 91, 2, 1800);
+    			add_location(div3, file$h, 92, 2, 1862);
     			if (!src_url_equal(img2.src, img2_src_value = "/assets/img/github.png")) attr_dev(img2, "src", img2_src_value);
     			attr_dev(img2, "alt", "github icon");
     			attr_dev(img2, "class", "svelte-qob9ex");
-    			add_location(img2, file$h, 99, 4, 2107);
+    			add_location(img2, file$h, 100, 4, 2169);
     			attr_dev(a2, "target", "_blank");
     			attr_dev(a2, "href", "https://github.com/poloclub/cnn-explainer");
     			attr_dev(a2, "class", "svelte-qob9ex");
-    			add_location(a2, file$h, 98, 3, 2034);
+    			add_location(a2, file$h, 99, 3, 2096);
     			attr_dev(div4, "class", "icon svelte-qob9ex");
     			attr_dev(div4, "title", "Open-source code");
-    			add_location(div4, file$h, 97, 2, 1987);
+    			add_location(div4, file$h, 98, 2, 2049);
     			attr_dev(div5, "class", "icons svelte-qob9ex");
-    			add_location(div5, file$h, 83, 1, 1589);
+    			add_location(div5, file$h, 84, 1, 1651);
     			attr_dev(div6, "id", "header");
     			attr_dev(div6, "class", "svelte-qob9ex");
-    			add_location(div6, file$h, 56, 0, 770);
+    			add_location(div6, file$h, 57, 0, 832);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -16540,7 +16541,7 @@ var app = (function () {
     			t = space();
     			create_component(explainer.$$.fragment);
     			attr_dev(div, "id", "app-page");
-    			add_location(div, file$i, 8, 0, 122);
+    			add_location(div, file$i, 14, 0, 374);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
