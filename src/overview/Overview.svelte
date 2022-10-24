@@ -1570,6 +1570,7 @@
   </div>
 
   <div class="cnn">
+    <!-- the CNN visualization is defined here with a cnn-svg ID -->
     <svg id="cnn-svg"></svg>
   </div>
 </div>
