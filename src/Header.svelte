@@ -1,3 +1,4 @@
+<!-- this is just the black header bar on the top, static -->
 <script>
 </script>
 
