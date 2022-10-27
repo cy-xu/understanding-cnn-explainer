@@ -77,13 +77,13 @@ export function getDataRange(image) {
 
 export function gridData(image, constraint=getVisualizationSizeConstraint(image.length)) {
   // Constrain grids based on input image size.
-  var data = new Array();
+  var data = [];
   var xpos = 1;
   var ypos = 1;
   var width = constraint;
   var height = constraint;
   for (var row = 0; row < image.length; row++) {
-    data.push( new Array() );
+    data.push( [] );
     for (var column = 0; column < image[0].length; column++) {
       data[row].push({
         text: Math.round(image[row][column] * 100) / 100,

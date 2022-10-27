@@ -15,7 +15,7 @@ class Node {
    * @param {string} layerName Name of the node's layer.
    * @param {int} index Index of this node in its layer.
    * @param {string} type Node type {input, conv, pool, relu, fc}. 
-   * @param {number} bias The bias assocated to this node.
+   * @param {number} bias The bias associated to this node.
    * @param {[[number]]} output Output of this node.
    */
   constructor(layerName, index, type, bias, output) {
@@ -32,6 +32,12 @@ class Node {
 }
 
 class Link {
+  /**
+   *
+   * @param source Indicates the source node of the link
+   * @param dest Indicates the destination node of the link
+   * @param weight Indicates the weight of that specific link
+   */
   constructor(source, dest, weight) {
     this.source = source;
     this.dest = dest;
@@ -39,6 +45,14 @@ class Link {
   }
 }
 
+/**
+ *
+ * @param nnJSON The input json file from which the neural network is unpacked.
+ * @param inputImageArray image array consisting of the input images to the network.
+ * Here the nnJSON consisting of the neural network components and the input image array
+ * are taken as inputs and were unpacked into a neural network representation.
+ * @returns {*[]}
+ */
 const constructNNFromJSON = (nnJSON, inputImageArray) => {
   console.log(nnJSON);
   console.log(inputImageArray);
@@ -108,7 +122,7 @@ const constructNNFromJSON = (nnJSON, inputImageArray) => {
         node.inputLinks.push(link);
       } else if (curLayerType === nodeType.FLATTEN) {
         // Flatten layer has no weights. Links are multiple-to-one.
-        // Use dummy weights to store the corresponding entry in the previsou
+        // Use dummy weights to store the corresponding entry in the previous
         // node as (row, column)
         // The flatten() in tf2.keras has order: channel -> row -> column
         let preNodeWidth = nn[curLayerIndex - 1][0].output.length,
@@ -163,7 +177,7 @@ export const constructNN = (inputImageFile) => {
  */
 export const init2DArray = (height, width, fill) => {
   let array = [];
-  // Itereate through rows
+  // Iterate through rows
   for (let r = 0; r < height; r++) {
     let row = new Array(width).fill(fill);
     array.push(row);
@@ -329,7 +343,7 @@ export const singleConv = (input, kernel, stride=1, padding=0) => {
 }
 
 /**
- * Convolution operation. This function update the outputs property of all nodes
+ * Convolution operation. This function update the outputs' property of all nodes
  * in the given layer. Previous layer is accessed by the reference in nodes'
  * links.
  * @param {[Node]} curLayer Conv layer.

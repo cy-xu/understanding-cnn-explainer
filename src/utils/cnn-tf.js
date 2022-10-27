@@ -20,7 +20,7 @@ class Node {
    * @param {string} layerName Name of the node's layer.
    * @param {int} index Index of this node in its layer.
    * @param {string} type Node type {input, conv, pool, relu, fc}. 
-   * @param {number} bias The bias assocated to this node.
+   * @param {number} bias The bias associated to this node.
    * @param {number[]} output Output of this node.
    */
   constructor(layerName, index, type, bias, output) {
