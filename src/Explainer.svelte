@@ -1,5 +1,8 @@
+<!-- this fiel again just imports the actual Overview -->
 <script>
   import Overview from './overview/Overview.svelte';
+
+  // this is not used
   import { cnnStore } from './stores.js';
 
   // Enum to control the displaying view
@@ -19,6 +22,10 @@
 
 </script>
 
+<!-- 
+  style in svelt are scoped to local component,
+  so we can use the same class name in different components.
+-->
 <style>
 #explainer {
   width: 100%;

@@ -15,6 +15,11 @@ print(tf.__version__)
 
 
 def create_class_dict():
+    """
+    Function reads in the metadata files and creates a hash table and dumps into the json file
+    Returns: A jason file consisting of the hash table for storing the directories and the respective classes.
+
+    """
     # Create a new version only including tiny 200 classes
     df = pd.read_csv('./tiny-imagenet-200/words.txt', sep='\t', header=None)
     keys, classes = df[0], df[1]
@@ -34,6 +39,12 @@ def create_class_dict():
 
 
 def create_val_class_dict():
+    """
+    Takes the previously created json file as the input and make use of metadata file to create a hash table using
+    the names and their corresponding classes
+    Returns: dumps the final hash table into a json file
+
+    """
     tiny_class_dict = load(open('./tiny-imagenet-200/class_dict.json', 'r'))
     tiny_val_class_dict = {}
 
@@ -56,6 +67,7 @@ def create_val_class_dict():
 
 def split_val_data():
     # Split validation images to 50% early stopping and 50% hold-out testing
+    # Navya : why use early stopping here?
     val_images = glob('./tiny-imagenet-200/val/images/*.JPEG')
     np.random.shuffle(val_images)
 
@@ -71,7 +83,7 @@ def split_val_data():
 def process_path_train(path):
     """
     Get the (class label, processed image) pair of the given image path. This
-    funciton uses python primitives, so you need to use tf.py_funciton wrapper.
+    function uses python primitives, so you need to use tf.py_function wrapper.
     This function uses global variables:
 
         WIDTH(int): the width of the targeting image
@@ -218,6 +230,15 @@ class TinyVGG(Model):
 
 @tf.function
 def train_step(image_batch, label_batch):
+    """
+    Create train step for every image and label batch pair and report loss values and accuracies.
+    Args:
+        image_batch:
+        label_batch:
+
+    Returns: calculates mean loss and accuracy for training set. Doesn't return anything.
+
+    """
     with tf.GradientTape() as tape:
         # Predict
         predictions = tiny_vgg(image_batch)
@@ -233,6 +254,15 @@ def train_step(image_batch, label_batch):
 
 @tf.function
 def vali_step(image_batch, label_batch):
+    """
+    Same as above except makes use of validation data to report the losses and accuracies
+    Args:
+        image_batch:
+        label_batch:
+
+    Returns: calculates mean loss and accuracy for the validation set. Doesn't return anything.
+
+    """
     predictions = tiny_vgg(image_batch)
     vali_loss = loss_object(label_batch, predictions)
 
@@ -242,6 +272,15 @@ def vali_step(image_batch, label_batch):
 
 @tf.function
 def test_step(image_batch, label_batch):
+    """
+    Same as above except makes use of test data to report the losses and accuracies
+    Args:
+        image_batch:
+        label_batch:
+
+    Returns: calculates mean loss and accuracy for the test set. Doesn't return anything.
+
+    """
     predictions = tiny_vgg(image_batch)
     test_loss = loss_object(label_batch, predictions)
 
@@ -307,7 +346,7 @@ test_dataset = prepare_for_training(test_labeld_dataset,
 
 # Create an instance of the model
 # tiny_vgg = TinyVGG()
-
+# Navya: why use keras API again here when they already defined the model using the tensorflow?
 # Use Keras Sequential API instead, since it is easy to save the model
 filters = 10
 tiny_vgg = Sequential([
