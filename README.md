@@ -13,6 +13,12 @@ Navya (comment branch): going through code to leave comments for questions and u
 
 Chengyuan (tweak branch): still learning JS, [taking notes](./notes/JavaScript_notes.md), looking into D3.js (used in this project for data visualization).
 
+### Week 5 (Oct 23-27)
+Navya (merged to main): Documented the java script files for CNN explainer and listed the implementation details in Document.md in src/utils folder.
+Started learning Tensorflow.js and D3 for visualization to work on our own model.
+
+Chegyuan : Worked on simple tensorflow.js models and trying to implement different models using this.   
+
 # CNN Explainer
 
 An interactive visualization system designed to help non-experts learn about Convolutional Neural Networks (CNNs)
