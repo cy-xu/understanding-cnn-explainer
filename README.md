@@ -17,7 +17,7 @@ Chengyuan (tweak branch): still learning JS, [taking notes](./notes/JavaScript_n
 Navya (merged to main): Documented the java script files for CNN explainer and listed the implementation details in Document.md in src/utils folder.
 Started learning Tensorflow.js and D3 for visualization to work on our own model.
 
-Chegyuan : Worked on simple tensorflow.js models and trying to implement different models using this.   
+Chegyuan(understanding svelete structure and teachable machine branches) : Worked on simple tensorflow.js models and trying to implement different models using this. Created two projects using tensorflow.js so far in tf.js_projects folder.
 
 # CNN Explainer
 
