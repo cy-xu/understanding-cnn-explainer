@@ -19,6 +19,11 @@ Started learning Tensorflow.js and D3 for visualization to work on our own model
 
 Chegyuan(understanding svelete structure and teachable machine branches) : Worked on simple tensorflow.js models and trying to implement different models using this. Created two projects using tensorflow.js so far in tf.js_projects folder.
 
+### Week 6 (October 31 - November 3)
+
+Navya: Finished lessons on tensorflow.js from Edx course. Working on the movenet project in tfjs repo. Discussed about the project plan and about layout of the project.
+Chegyuan: Fixed teachable machine code and it is running now. Working on the movenet project. Completed the lessons on tensorflow.js in the edx course. 
+
 # CNN Explainer
 
 An interactive visualization system designed to help non-experts learn about Convolutional Neural Networks (CNNs)
