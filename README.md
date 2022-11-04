@@ -22,6 +22,7 @@ Chegyuan(understanding svelete structure and teachable machine branches) : Worke
 ### Week 6 (October 31 - November 3)
 
 Navya: Finished lessons on tensorflow.js from Edx course. Working on the movenet project in tfjs repo. Discussed about the project plan and about layout of the project.
+
 Chegyuan: Fixed teachable machine code and it is running now. Working on the movenet project. Completed the lessons on tensorflow.js in the edx course. 
 
 # CNN Explainer
