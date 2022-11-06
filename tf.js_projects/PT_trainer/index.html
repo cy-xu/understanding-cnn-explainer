@@ -1,0 +1,40 @@
+<!-- source https://codelabs.developers.google.com/tensorflowjs-transfer-learning-teachable-machine#0 -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Transfer Learning - TensorFlow.js</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Import the webpage's stylesheet -->
+    <link rel="stylesheet" href="./style.css">
+  </head>  
+  <body>
+    <h1>Make your own "Teachable Machine" using Transfer Learning with MobileNet v3 in TensorFlow.js using saved graph model from TFHub.</h1>
+    
+    <p id="status">Awaiting TF.js load</p>
+    
+    <video id="webcam" autoplay muted></video>
+    
+    <button id="enableCam">Enable Webcam</button>
+    <button class="dataCollector" data-1hot="0" data-name="background">Gather Background Data</button>
+    <button class="dataCollector" data-1hot="1" data-name="Class 1">Gather Class 1 Data</button>
+    <button class="dataCollector" data-1hot="2" data-name="Class 2">Gather Class 2 Data</button>
+    <button id="train">Train &amp; Predict!</button>
+    <button id="reset">Reset</button>
+
+    <!-- Require the peer dependencies of pose-detection. -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script> -->
+
+    <!-- You must explicitly require a TF.js backend if you're not using the TF.js union bundle. -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script> -->
+    <!-- Alternatively you can use the WASM backend: <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script> -->
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script> -->
+
+    <!-- Import the page's JavaScript to do some stuff -->
+    <script type="module" src="./script.js"></script>
+  </body>
+</html>
