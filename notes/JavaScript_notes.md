@@ -52,3 +52,5 @@
 
 - D3.js for data visualization
   - in progress
+  
+- https://wesbos.com/javascript-modules

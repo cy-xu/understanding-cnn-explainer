@@ -16,6 +16,10 @@
     <p id="status">Awaiting TF.js load</p>
     
     <video id="webcam" autoplay muted></video>
+
+    <p>
+      <canvas id="testCanvas" width="345" height="345"></canvas>    
+    </p>
     
     <button id="enableCam">Enable Webcam</button>
     <button class="dataCollector" data-1hot="0" data-name="background">Gather Background Data</button>
@@ -24,15 +28,16 @@
     <button id="train">Train &amp; Predict!</button>
     <button id="reset">Reset</button>
 
-    <!-- Require the peer dependencies of pose-detection. -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script> -->
+    <br>
+    <br>
+    <br>
+    <br>
+    
+    <!-- Import TensorFlow.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js" type="text/javascript"></script>
 
-    <!-- You must explicitly require a TF.js backend if you're not using the TF.js union bundle. -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script> -->
-    <!-- Alternatively you can use the WASM backend: <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script> -->
-
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script> -->
+    <!-- Import TensorFlow.js library -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js" type="text/javascript"></script> -->
 
     <!-- Import the page's JavaScript to do some stuff -->
     <script type="module" src="./script.js"></script>
