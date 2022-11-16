@@ -11,11 +11,22 @@
     <link rel="stylesheet" href="./style.css">
   </head>  
   <body>
-    <h1>Make your own "Teachable Machine" using Transfer Learning with MobileNet v3 in TensorFlow.js using saved graph model from TFHub.</h1>
+    <h1>Personal PT Trainer</h1>
     
     <p id="status">Awaiting TF.js load</p>
     
-    <video id="webcam" autoplay muted></video>
+
+    <div class="canvas-wrapper">
+      <canvas id="output"></canvas>
+      <video id="video" playsinline style="
+        -webkit-transform: scaleX(-1);
+        transform: scaleX(-1);
+        visibility: hidden;
+        width: auto;
+        height: auto;
+        ">
+      </video>
+    </div>
 
     <p>
       <canvas id="testCanvas" width="345" height="345"></canvas>    
@@ -27,6 +38,9 @@
     <button class="dataCollector" data-1hot="2" data-name="Class 2">Gather Class 2 Data</button>
     <button id="train">Train &amp; Predict!</button>
     <button id="reset">Reset</button>
+    
+    <!-- <video id="webcam" autoplay muted style="visibility: hidden;"></video> -->
+    <!-- <video id="webcam" autoplay muted></video> -->
 
     <br>
     <br>
@@ -35,6 +49,21 @@
     
     <!-- Import TensorFlow.js library -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js" type="text/javascript"></script>
+
+    <!-- Require the peer dependencies of pose-detection. -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script> -->
+
+    <!-- You must explicitly require a TF.js backend if you're not using the TF.js union bundle. -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script> -->
+    <!-- Alternatively you can use the WASM backend: <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script> -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+
+    <!-- Load three.js -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/three@0.106.2/build/three.min.js"></script> -->
+    <!-- Load scatter-gl.js -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/scatter-gl@0.0.1/lib/scatter-gl.min.js"></script> -->
 
     <!-- Import TensorFlow.js library -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js" type="text/javascript"></script> -->

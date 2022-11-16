@@ -1,3 +1,8 @@
+// import * as poseDetection from '@tensorflow-models/pose-detection';
+
+import { Camera } from "./camera.js";
+import { STATE, BLAZEPOSE_CONFIG, MOVENET_CONFIG } from "./params.js";
+
 /* globals tf */
 
 const MODEL_PATH =
@@ -6,13 +11,14 @@ const EXAMPLE_IMG = document.getElementById("exampleImg");
 const CANVAS = document.getElementById("testCanvas");
 const CTX = CANVAS.getContext("2d");
 
-let movenet = undefined;
+let detector, camera;
 let measurePose = true;
+let rafId;
 
 // loadAndRunModel();
 
 const STATUS = document.getElementById("status");
-const VIDEO = document.getElementById("webcam");
+const VIDEO = document.getElementById("video");
 const ENABLE_CAM_BUTTON = document.getElementById("enableCam");
 const RESET_BUTTON = document.getElementById("reset");
 const TRAIN_BUTTON = document.getElementById("train");
@@ -26,14 +32,12 @@ TRAIN_BUTTON.addEventListener("click", trainAndPredict);
 RESET_BUTTON.addEventListener("click", reset);
 
 // start camera when page is loaded
-if (window.addEventListener) {
-  window.addEventListener("load", enableCam, false); //W3C
-  window.addEventListener("load", drawPoseOnFrame, false); //not working.
-} else {
-  window.attachEvent("onload", enableCam); //IE
-}
-
-
+// if (window.addEventListener) {
+//   window.addEventListener("load", enableCam, false); //W3C
+//   // window.addEventListener("load", drawPoseOnFrame, false); //not working.
+// } else {
+//   window.attachEvent("onload", enableCam); //IE
+// }
 
 // Just add more buttons in HTML to allow classification of more classes of data!
 let dataCollectorButtons = document.querySelectorAll("button.dataCollector");
@@ -59,25 +63,32 @@ let predict = false;
 /**
  * Loads the MobileNet model and warms it up so ready for use.
  **/
-async function loadMobileNetFeatureModel() {
+async function createDetector_old() {
   const URL =
     "https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v3_small_100_224/feature_vector/5/default/1";
   // mobilenet = await tf.loadGraphModel(URL, {fromTFHub: true});
 
-  movenet = await tf.loadGraphModel(MODEL_PATH, { fromTFHub: true });
+  // model =
 
-  STATUS.innerText = "MobileNet v3 loaded successfully!";
+  STATUS.innerText = "MoveNet loaded successfully!";
 
-  // Warm up the model by passing zeros through it once.
-  tf.tidy(function () {
-    let answer = movenet.predict(
-      tf.zeros([1, MOBILE_NET_INPUT_HEIGHT, MOBILE_NET_INPUT_WIDTH, 3]).toInt()
-    );
-    console.log(answer.toString());
-  });
+  return await tf.loadGraphModel(MODEL_PATH, { fromTFHub: true });
 }
 
-loadMobileNetFeatureModel();
+async function warmUpModel(model) {
+  // Warm up the model by passing zeros through it once.
+  const zeros = tf
+    .zeros([MOBILE_NET_INPUT_WIDTH, MOBILE_NET_INPUT_HEIGHT, 3])
+    .toInt();
+  // let answer = model.predict(zeros);
+  console.log("zero shape", zeros.shape);
+
+  let answer = await model.estimatePoses(zeros);
+  console.log("Warm up model:", answer);
+  console.log("Warm up model:", answer.toString());
+
+  STATUS.innerText = "MoveNet warmed up!";
+}
 
 let model = tf.sequential();
 model.add(
@@ -158,31 +169,76 @@ async function calculateFeaturesOnCurrentFrame() {
   );
 
   resizedTensorFrame = tf.expandDims(resizedTensorFrame.toInt());
-  console.log("resizedTensorFrame", resizedTensorFrame.shape.toString());
-  console.log("resizedTensorFrame", tf.max(resizedTensorFrame).toString());
+  // console.log("resizedTensorFrame", resizedTensorFrame.shape.toString());
+  // console.log("resizedTensorFrame", tf.max(resizedTensorFrame).toString());
 
-  let tensorOutput = movenet.predict(resizedTensorFrame);
+  let tensorOutput = detector.predict(resizedTensorFrame);
 
-  console.log("tensorOutput", tensorOutput.shape.toString());
+  // console.log("tensorOutput", tensorOutput.shape.toString());
   let arrayOutput = await tensorOutput.array();
 
-  console.log("tensorOutput.array", tensorOutput.toString());
+  // console.log("tensorOutput.array", tensorOutput.toString());
 
   return arrayOutput;
+}
+
+async function renderResult() {
+  if (camera.video.readyState < 2) {
+    await new Promise((resolve) => {
+      camera.video.onloadeddata = () => {
+        resolve(video);
+      };
+    });
+  }
+
+  let poses = null;
+
+  // Detector can be null if initialization failed (for example when loading
+  // from a URL that does not exist).
+  if (detector != null) {
+    // FPS only counts the time it takes to finish estimatePoses.
+    // beginEstimatePosesStats();
+
+    // Detectors can throw errors, for example when using custom URLs that
+    // contain a model that doesn't provide the expected output.
+    try {
+      poses = await detector.estimatePoses(camera.video, {
+        maxPoses: STATE.modelConfig.maxPoses,
+        flipHorizontal: false,
+      });
+    } catch (error) {
+      alert(error);
+      detector.dispose();
+      detector = null;
+    }
+
+    // endEstimatePosesStats();
+  }
+
+  camera.drawCtx();
+
+  // The null check makes sure the UI is not in the middle of changing to a
+  // different model. If during model change, the result is from an old model,
+  // which shouldn't be rendered.
+  if (poses && poses.length > 0 && !STATE.isModelChanged) {
+    camera.drawResults(poses);
+  }
+
+  rafId = requestAnimationFrame(renderResult);
 }
 
 async function drawPoseOnFrame() {
   if (measurePose) {
     let pose = await calculateFeaturesOnCurrentFrame();
 
-    console.log("typeof(pose)", typeof pose);
+    // console.log("typeof(pose)", typeof pose);
 
     for (let i = 0; i < pose[0][0].length; i++) {
       let y = pose[0][0][i][0];
       let x = pose[0][0][i][1];
       let score = pose[0][0][i][2];
-      console.log("x", x.toString());
-      console.log("y", y.toString());
+      // console.log("x", x.toString());
+      // console.log("y", y.toString());
 
       CTX.fillStyle = "#00ff00";
       CTX.beginPath();
@@ -294,3 +350,66 @@ function reset() {
 
   console.log("Tensors in memory: " + tf.memory().numTensors);
 }
+
+async function createMoveNetDetector() {
+  let modelType;
+  STATE.modelConfig = MOVENET_CONFIG;
+  STATE.model = poseDetection.SupportedModels.MoveNet;
+
+  if (STATE.modelConfig.type == "lightning") {
+    modelType = poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING;
+  } else if (STATE.modelConfig.type == "thunder") {
+    modelType = poseDetection.movenet.modelType.SINGLEPOSE_THUNDER;
+  } else if (STATE.modelConfig.type == "multipose") {
+    modelType = poseDetection.movenet.modelType.MULTIPOSE_LIGHTNING;
+  }
+  const modelConfig = { modelType };
+
+  if (STATE.modelConfig.customModel !== "") {
+    modelConfig.modelUrl = STATE.modelConfig.customModel;
+  }
+  if (STATE.modelConfig.type === "multipose") {
+    modelConfig.enableTracking = STATE.modelConfig.enableTracking;
+  }
+  return poseDetection.createDetector(STATE.model, modelConfig);
+}
+
+async function createBlazePoseDetector() {
+  STATE.modelConfig = BLAZEPOSE_CONFIG;
+  STATE.model = poseDetection.SupportedModels.BlazePose;
+  const detectorConfig = {
+    runtime: 'tfjs',
+    enableSmoothing: true,
+    modelType: 'full'
+  };
+
+  return poseDetection.createDetector(STATE.model, detectorConfig);
+}
+
+async function app() {
+  camera = await Camera.setupCamera(STATE.camera);
+
+  // movenet = await createDetector();
+
+  // create model
+  // const model = poseDetection.SupportedModels.BlazePose;
+  // const detectorConfig = {
+  //   runtime: "tfjs", // or 'tfjs'
+  //   modelType: "full",
+  // };
+  // movenet = await poseDetection.createDetector(model, detectorConfig);
+
+  // detector = await createBlazePoseDetector();
+  detector = await createMoveNetDetector();
+
+  tf.engine().startScope();
+  // do your thing
+  // warmUpModel(movenet);
+
+  // drawPoseOnFrame();
+  renderResult();
+
+  tf.engine().endScope();
+}
+
+app();
