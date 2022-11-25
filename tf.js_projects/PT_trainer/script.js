@@ -11,9 +11,16 @@ const EXAMPLE_IMG = document.getElementById("exampleImg");
 const CANVAS = document.getElementById("testCanvas");
 const CTX = CANVAS.getContext("2d");
 
-let detector, camera;
+let detector, camera, currentPose;
 let measurePose = true;
-let rafId;
+let predict = false;
+let collectingPose = false;
+let rafId, nIntervId;
+let local_model;
+
+let featureLength = 34;
+let poseClasses = 2;
+let sampleCounter = 0;
 
 // loadAndRunModel();
 
@@ -21,15 +28,21 @@ const STATUS = document.getElementById("status");
 const VIDEO = document.getElementById("video");
 const ENABLE_CAM_BUTTON = document.getElementById("enableCam");
 const RESET_BUTTON = document.getElementById("reset");
+const START_COLLECTING = document.getElementById("startCollect");
+const STOP_COLLECTING = document.getElementById("stopCollect");
 const TRAIN_BUTTON = document.getElementById("train");
 const MOBILE_NET_INPUT_WIDTH = 192;
 const MOBILE_NET_INPUT_HEIGHT = 192;
 const STOP_DATA_GATHER = -1;
 const CLASS_NAMES = [];
+const MIN_SAMPLES = 100;
 
 // ENABLE_CAM_BUTTON.addEventListener("click", enableCam);
 TRAIN_BUTTON.addEventListener("click", trainAndPredict);
 RESET_BUTTON.addEventListener("click", reset);
+
+START_COLLECTING.addEventListener("click", startGatherLoop);
+STOP_COLLECTING.addEventListener("click", stopGatherLoop);
 
 // start camera when page is loaded
 // if (window.addEventListener) {
@@ -42,15 +55,15 @@ RESET_BUTTON.addEventListener("click", reset);
 // Just add more buttons in HTML to allow classification of more classes of data!
 let dataCollectorButtons = document.querySelectorAll("button.dataCollector");
 
-for (let i = 0; i < dataCollectorButtons.length; i++) {
-  dataCollectorButtons[i].addEventListener("mousedown", drawPoseOnFrame);
-  dataCollectorButtons[i].addEventListener("mouseup", drawPoseOnFrame);
-  // For mobile.
-  dataCollectorButtons[i].addEventListener("touchend", gatherDataForClass);
+// for (let i = 0; i < dataCollectorButtons.length; i++) {
+// dataCollectorButtons[i].addEventListener("mousedown", startGatherLoop);
+// dataCollectorButtons[i].addEventListener("mouseup", drawPoseOnFrame);
+// For mobile.
+// dataCollectorButtons[i].addEventListener("touchend", gatherDataForClass);
 
-  // Populate the human readable names for classes.
-  CLASS_NAMES.push(dataCollectorButtons[i].getAttribute("data-name"));
-}
+// Populate the human readable names for classes.
+// CLASS_NAMES.push(dataCollectorButtons[i].getAttribute("data-name"));
+// }
 
 let mobilenet = undefined;
 let gatherDataState = STOP_DATA_GATHER;
@@ -58,7 +71,6 @@ let videoPlaying = false;
 let trainingDataInputs = [];
 let trainingDataOutputs = [];
 let examplesCount = [];
-let predict = false;
 
 /**
  * Loads the MobileNet model and warms it up so ready for use.
@@ -90,27 +102,32 @@ async function warmUpModel(model) {
   STATUS.innerText = "MoveNet warmed up!";
 }
 
-let model = tf.sequential();
-model.add(
-  tf.layers.dense({ inputShape: [1024], units: 128, activation: "relu" })
-);
-model.add(
-  tf.layers.dense({ units: CLASS_NAMES.length, activation: "softmax" })
-);
+function createLocalModel(channelIn, channelOut) {
+  let model = tf.sequential();
+  model.add(
+    tf.layers.dense({ inputShape: [channelIn], units: 128, activation: "relu" })
+  );
+  model.add(
+    tf.layers.dense({ units: channelOut, activation: "softmax" })
+  );
 
-model.summary();
+  model.summary();
 
-// Compile the model with the defined optimizer and specify a loss function to use.
-model.compile({
-  // Adam changes the learning rate over time which is useful.
-  optimizer: "adam",
-  // Use the correct loss function. If 2 classes of data, must use binaryCrossentropy.
-  // Else categoricalCrossentropy is used if more than 2 classes.
-  loss:
-    CLASS_NAMES.length === 2 ? "binaryCrossentropy" : "categoricalCrossentropy",
-  // As this is a classification problem you can record accuracy in the logs too!
-  metrics: ["accuracy"],
-});
+  // Compile the model with the defined optimizer and specify a loss function to use.
+  model.compile({
+    // Adam changes the learning rate over time which is useful.
+    optimizer: "adam",
+    // Use the correct loss function. If 2 classes of data, must use binaryCrossentropy.
+    // Else categoricalCrossentropy is used if more than 2 classes.
+    loss:
+    poseClasses === 2
+        ? "binaryCrossentropy"
+        : "categoricalCrossentropy",
+    // As this is a classification problem you can record accuracy in the logs too!
+    metrics: ["accuracy"],
+  });
+  return model;
+}
 
 /**
  * Check if getUserMedia is supported for webcam access.
@@ -182,6 +199,35 @@ async function calculateFeaturesOnCurrentFrame() {
   return arrayOutput;
 }
 
+function extrctPoseValues() {
+  if (sampleCounter >= MIN_SAMPLES) {
+    stopGatherLoop();
+    return;
+  }
+
+  let poseValues = [];
+
+  for (let i = 0; i < currentPose.keypoints.length; i++) {
+    poseValues.push(currentPose.keypoints[i].x);
+    poseValues.push(currentPose.keypoints[i].y);
+  }
+
+  trainingDataInputs.push(poseValues);
+  featureLength = poseValues.length;
+
+  if (collectingPose){
+    // collect real pose
+    trainingDataOutputs.push(1);
+    sampleCounter++;
+  } else {
+    // collect background
+    trainingDataOutputs.push(0);
+  }
+  
+  console.log("pose_values", poseValues);
+  STATUS.innerText = "Collecting pose samples: " + trainingDataInputs.length;
+}
+
 async function renderResult() {
   if (camera.video.readyState < 2) {
     await new Promise((resolve) => {
@@ -217,11 +263,22 @@ async function renderResult() {
 
   camera.drawCtx();
 
+  // if current learning the new pose, put them into a list
+  // if (collectPose && poses.length > 0) {
+  if (poses.length > 0) {
+    // poses[0].keypoints
+    currentPose = poses[0];
+  }
+
   // The null check makes sure the UI is not in the middle of changing to a
   // different model. If during model change, the result is from an old model,
   // which shouldn't be rendered.
   if (poses && poses.length > 0 && !STATE.isModelChanged) {
     camera.drawResults(poses);
+  }
+
+  if (predict){
+    predictLoop(currentPose);
   }
 
   rafId = requestAnimationFrame(renderResult);
@@ -278,18 +335,38 @@ function dataGatherLoop() {
   }
 }
 
+function startGatherLoop() {
+  // Only gather data if webcam is on and a relevent button is pressed.
+  // window.cancelAnimationFrame(rafId);
+  collectingPose = true;
+  nIntervId = setInterval(extrctPoseValues, 100);
+}
+
+function stopGatherLoop() {
+  collectingPose = false;
+
+  // cancel interval and stop collecting data
+  clearInterval(nIntervId);
+  nIntervId = null;
+  STATUS.innerText =
+    "Data collection done -- samples: " + trainingDataInputs.length;
+}
+
 /**
  * Once data collected actually perform the transfer learning.
  **/
 async function trainAndPredict() {
+
   predict = false;
   tf.util.shuffleCombo(trainingDataInputs, trainingDataOutputs);
 
+  console.log("trainingDataOutputs", trainingDataOutputs);
+
   let outputsAsTensor = tf.tensor1d(trainingDataOutputs, "int32");
-  let oneHotOutputs = tf.oneHot(outputsAsTensor, CLASS_NAMES.length);
+  let oneHotOutputs = tf.oneHot(outputsAsTensor, poseClasses);
   let inputsAsTensor = tf.stack(trainingDataInputs);
 
-  let results = await model.fit(inputsAsTensor, oneHotOutputs, {
+  let results = await local_model.fit(inputsAsTensor, oneHotOutputs, {
     shuffle: true,
     batchSize: 5,
     epochs: 10,
@@ -301,7 +378,9 @@ async function trainAndPredict() {
   inputsAsTensor.dispose();
 
   predict = true;
-  predictLoop();
+  debugger;
+
+  // predictLoop();
 }
 
 /**
@@ -314,23 +393,29 @@ function logProgress(epoch, logs) {
 /**
  *  Make live predictions from webcam once trained.
  **/
-function predictLoop() {
-  if (predict) {
+function predictLoop(pose) {
     tf.tidy(function () {
-      let imageFeatures = calculateFeaturesOnCurrentFrame();
-      let prediction = model.predict(imageFeatures.expandDims()).squeeze();
+      let poseValues = [];
+
+      for (let i = 0; i < pose.keypoints.length; i++) {
+        poseValues.push(currentPose.keypoints[i].x);
+        poseValues.push(currentPose.keypoints[i].y);
+      }
+      poseTensor = tf.tensor2d([poseValues]);
+      console.log("poseTensor shape", poseTensor.shape);
+
+      let prediction = model.predict(poseValues.expandDims()).squeeze();
       let highestIndex = prediction.argMax().arraySync();
       let predictionArray = prediction.arraySync();
       STATUS.innerText =
         "Prediction: " +
-        CLASS_NAMES[highestIndex] +
+        highestIndex +
         " with " +
         Math.floor(predictionArray[highestIndex] * 100) +
         "% confidence";
     });
 
-    window.requestAnimationFrame(predictLoop);
-  }
+    // window.requestAnimationFrame(predictLoop);
 }
 
 /**
@@ -378,9 +463,9 @@ async function createBlazePoseDetector() {
   STATE.modelConfig = BLAZEPOSE_CONFIG;
   STATE.model = poseDetection.SupportedModels.BlazePose;
   const detectorConfig = {
-    runtime: 'tfjs',
+    runtime: "tfjs",
     enableSmoothing: true,
-    modelType: 'full'
+    modelType: "full",
   };
 
   return poseDetection.createDetector(STATE.model, detectorConfig);
@@ -388,17 +473,7 @@ async function createBlazePoseDetector() {
 
 async function app() {
   camera = await Camera.setupCamera(STATE.camera);
-
-  // movenet = await createDetector();
-
-  // create model
-  // const model = poseDetection.SupportedModels.BlazePose;
-  // const detectorConfig = {
-  //   runtime: "tfjs", // or 'tfjs'
-  //   modelType: "full",
-  // };
-  // movenet = await poseDetection.createDetector(model, detectorConfig);
-
+  local_model = createLocalModel(featureLength, poseClasses);
   // detector = await createBlazePoseDetector();
   detector = await createMoveNetDetector();
 
