@@ -15,6 +15,15 @@ let detector, camera;
 let measurePose = true;
 let rafId;
 
+// 1. Import the library
+const jsProfiler = require('js-profiler');
+
+// 2. Run the profiler
+jsProfiler.run()
+  .then((report) => {
+    console.log(JSON.stringify(report, null, 2));
+  });
+
 // loadAndRunModel();
 
 const STATUS = document.getElementById("status");
@@ -26,6 +35,57 @@ const MOBILE_NET_INPUT_WIDTH = 192;
 const MOBILE_NET_INPUT_HEIGHT = 192;
 const STOP_DATA_GATHER = -1;
 const CLASS_NAMES = [];
+
+const countContainer = document.getElementById("countdown-number");
+const startButton = document.getElementById("start");
+const stopButton = document.getElementById("stop");
+const resetButton = document.getElementById("set");
+const timeoutAudio = document.getElementById("timeout_audio");
+
+var remainingTime = 30;
+var timer;
+var isStopped = true
+
+const startTimer = () => {
+  if (isStopped) {
+    isStopped = false;
+    countContainer.innerHTML = remainingTime;
+    timer = setInterval(renderTime, 1000);
+  }
+};
+const stopTimer = () => {
+  isStopped = true;
+  if (timer) {
+    clearInterval(timer);
+  }
+};
+const resetTimer = () => {
+  isStopped = true;
+  clearInterval(timer);
+  remainingTime = 30;
+  countContainer.innerHTML = remainingTime;
+};
+
+timeoutAudio.src = "http://soundbible.com/grab.php?id=1252&type=mp3";
+timeoutAudio.load();
+startButton.onclick = startTimer;
+resetButton.onclick = resetTimer;
+stopButton.onclick = stopTimer;
+
+const renderTime = () => {
+  // decement time
+  remainingTime -= 1;
+  // render count on the screen
+  countContainer.innerHTML = remainingTime;
+  // timeout on zero
+  if (remainingTime === 0) {
+    isStopped = true;
+    clearInterval(timer);
+    // Play audio on timeout
+    timeoutAudio.play();
+    remainingTime = 30;
+  }
+};
 
 // ENABLE_CAM_BUTTON.addEventListener("click", enableCam);
 TRAIN_BUTTON.addEventListener("click", trainAndPredict);
@@ -63,6 +123,7 @@ let predict = false;
 /**
  * Loads the MobileNet model and warms it up so ready for use.
  **/
+
 async function createDetector_old() {
   const URL =
     "https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v3_small_100_224/feature_vector/5/default/1";
@@ -400,7 +461,10 @@ async function app() {
   // movenet = await poseDetection.createDetector(model, detectorConfig);
 
   // detector = await createBlazePoseDetector();
+  var startTime = performance.now()
   detector = await createMoveNetDetector();
+  var endTime = performance.now()
+  console.log("The function call createMoveNetDetector took ${endTime - startTime} Milli seconds")
 
   tf.engine().startScope();
   // do your thing
