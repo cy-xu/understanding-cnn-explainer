@@ -17,12 +17,17 @@
 // import * as posedetection from '@tensorflow-models/pose-detection';
 // import * as scatter from 'scatter-gl';
 
-import * as params from './params.js';
-import {isMobile} from './util.js';
+import * as params from "./params.js";
+import { isMobile } from "./util.js";
 
 // These anchor points allow the pose pointcloud to resize according to its
 // position in the input.
-const ANCHOR_POINTS = [[0, 0, 0], [0, 1, 0], [-1, 0, 0], [-1, -1, 0]];
+const ANCHOR_POINTS = [
+  [0, 0, 0],
+  [0, 1, 0],
+  [-1, 0, 0],
+  [-1, -1, 0],
+];
 
 // #ffffff - White
 // #800000 - Maroon
@@ -45,15 +50,32 @@ const ANCHOR_POINTS = [[0, 0, 0], [0, 1, 0], [-1, 0, 0], [-1, -1, 0]];
 // #3cb44b - Chateau Green
 // #a9a9a9 - Silver Chalice
 const COLOR_PALETTE = [
-  '#ffffff', '#800000', '#469990', '#e6194b', '#42d4f4', '#fabed4', '#aaffc3',
-  '#9a6324', '#000075', '#f58231', '#4363d8', '#ffd8b1', '#dcbeff', '#808000',
-  '#ffe119', '#911eb4', '#bfef45', '#f032e6', '#3cb44b', '#a9a9a9'
+  "#ffffff",
+  "#800000",
+  "#469990",
+  "#e6194b",
+  "#42d4f4",
+  "#fabed4",
+  "#aaffc3",
+  "#9a6324",
+  "#000075",
+  "#f58231",
+  "#4363d8",
+  "#ffd8b1",
+  "#dcbeff",
+  "#808000",
+  "#ffe119",
+  "#911eb4",
+  "#bfef45",
+  "#f032e6",
+  "#3cb44b",
+  "#a9a9a9",
 ];
 export class Camera {
   constructor() {
-    this.video = document.getElementById('video');
-    this.canvas = document.getElementById('output');
-    this.ctx = this.canvas.getContext('2d');
+    this.video = document.getElementById("video");
+    this.canvas = document.getElementById("output");
+    this.ctx = this.canvas.getContext("2d");
     // this.scatterGLEl = document.querySelector('#scatter-gl-container');
     // this.scatterGL = new scatter.ScatterGL(this.scatterGLEl, {
     //   'rotateOnStart': true,
@@ -70,26 +92,28 @@ export class Camera {
   static async setupCamera(cameraParam) {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       throw new Error(
-          'Browser API navigator.mediaDevices.getUserMedia not available');
+        "Browser API navigator.mediaDevices.getUserMedia not available"
+      );
     }
 
-    const {targetFPS, sizeOption} = cameraParam;
+    const { targetFPS, sizeOption } = cameraParam;
     const $size = params.VIDEO_SIZE[sizeOption];
-    console.log('Camera size:', $size);
+    console.log("Camera size:", $size);
 
     const videoConfig = {
-      'audio': false,
-      'video': {
-        facingMode: 'user',
+      audio: false,
+      video: {
+        facingMode: "user",
         // Only setting the video to a specified size for large screen, on
         // mobile devices accept the default size.
-        width: isMobile() ? params.VIDEO_SIZE['360 X 270'].width : $size.width,
-        height: isMobile() ? params.VIDEO_SIZE['360 X 270'].height :
-                             $size.height,
+        width: isMobile() ? params.VIDEO_SIZE["360 X 270"].width : $size.width,
+        height: isMobile()
+          ? params.VIDEO_SIZE["360 X 270"].height
+          : $size.height,
         frameRate: {
           ideal: targetFPS,
-        }
-      }
+        },
+      },
     };
 
     const stream = await navigator.mediaDevices.getUserMedia(videoConfig);
@@ -113,7 +137,7 @@ export class Camera {
 
     camera.canvas.width = videoWidth;
     camera.canvas.height = videoHeight;
-    const canvasContainer = document.querySelector('.canvas-wrapper');
+    const canvasContainer = document.querySelector(".canvas-wrapper");
     canvasContainer.style = `width: ${videoWidth}px; height: ${videoHeight}px`;
 
     // Because the image from camera is mirrored, need to flip horizontally.
@@ -132,7 +156,12 @@ export class Camera {
 
   drawCtx() {
     this.ctx.drawImage(
-        this.video, 0, 0, this.video.videoWidth, this.video.videoHeight);
+      this.video,
+      0,
+      0,
+      this.video.videoWidth,
+      this.video.videoHeight
+    );
   }
 
   clearCtx() {
@@ -168,22 +197,23 @@ export class Camera {
    * @param keypoints A list of keypoints.
    */
   drawKeypoints(keypoints) {
-    const keypointInd =
-        poseDetection.util.getKeypointIndexBySide(params.STATE.model);
-    this.ctx.fillStyle = 'Red';
-    this.ctx.strokeStyle = 'White';
+    const keypointInd = poseDetection.util.getKeypointIndexBySide(
+      params.STATE.model
+    );
+    this.ctx.fillStyle = "Red";
+    this.ctx.strokeStyle = "White";
     this.ctx.lineWidth = params.DEFAULT_LINE_WIDTH;
 
     for (const i of keypointInd.middle) {
       this.drawKeypoint(keypoints[i]);
     }
 
-    this.ctx.fillStyle = 'Green';
+    this.ctx.fillStyle = "Green";
     for (const i of keypointInd.left) {
       this.drawKeypoint(keypoints[i]);
     }
 
-    this.ctx.fillStyle = 'Orange';
+    this.ctx.fillStyle = "Orange";
     for (const i of keypointInd.right) {
       this.drawKeypoint(keypoints[i]);
     }
@@ -208,56 +238,63 @@ export class Camera {
    */
   drawSkeleton(keypoints, poseId) {
     // Each poseId is mapped to a color in the color palette.
-    const color = params.STATE.modelConfig.enableTracking && poseId != null ?
-        COLOR_PALETTE[poseId % 20] :
-        'White';
+    const color =
+      params.STATE.modelConfig.enableTracking && poseId != null
+        ? COLOR_PALETTE[poseId % 20]
+        : "White";
     this.ctx.fillStyle = color;
     this.ctx.strokeStyle = color;
     this.ctx.lineWidth = params.DEFAULT_LINE_WIDTH;
 
-    poseDetection.util.getAdjacentPairs(params.STATE.model).forEach(([
-                                                                      i, j
-                                                                    ]) => {
-      const kp1 = keypoints[i];
-      const kp2 = keypoints[j];
+    poseDetection.util
+      .getAdjacentPairs(params.STATE.model)
+      .forEach(([i, j]) => {
+        const kp1 = keypoints[i];
+        const kp2 = keypoints[j];
 
-      // If score is null, just show the keypoint.
-      const score1 = kp1.score != null ? kp1.score : 1;
-      const score2 = kp2.score != null ? kp2.score : 1;
-      const scoreThreshold = params.STATE.modelConfig.scoreThreshold || 0;
+        // If score is null, just show the keypoint.
+        const score1 = kp1.score != null ? kp1.score : 1;
+        const score2 = kp2.score != null ? kp2.score : 1;
+        const scoreThreshold = params.STATE.modelConfig.scoreThreshold || 0;
 
-      if (score1 >= scoreThreshold && score2 >= scoreThreshold) {
-        this.ctx.beginPath();
-        this.ctx.moveTo(kp1.x, kp1.y);
-        this.ctx.lineTo(kp2.x, kp2.y);
-        this.ctx.stroke();
-      }
-    });
+        if (score1 >= scoreThreshold && score2 >= scoreThreshold) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(kp1.x, kp1.y);
+          this.ctx.lineTo(kp2.x, kp2.y);
+          this.ctx.stroke();
+        }
+      });
   }
 
   drawKeypoints3D(keypoints) {
     const scoreThreshold = params.STATE.modelConfig.scoreThreshold || 0;
-    const pointsData =
-        keypoints.map(keypoint => ([-keypoint.x, -keypoint.y, -keypoint.z]));
+    const pointsData = keypoints.map((keypoint) => [
+      -keypoint.x,
+      -keypoint.y,
+      -keypoint.z,
+    ]);
 
-    const dataset =
-        new scatter.ScatterGL.Dataset([...pointsData, ...ANCHOR_POINTS]);
+    const dataset = new scatter.ScatterGL.Dataset([
+      ...pointsData,
+      ...ANCHOR_POINTS,
+    ]);
 
-    const keypointInd =
-        poseDetection.util.getKeypointIndexBySide(params.STATE.model);
+    const keypointInd = poseDetection.util.getKeypointIndexBySide(
+      params.STATE.model
+    );
     this.scatterGL.setPointColorer((i) => {
       if (keypoints[i] == null || keypoints[i].score < scoreThreshold) {
         // hide anchor points and low-confident points.
-        return '#ffffff';
+        return "#ffffff";
       }
       if (i === 0) {
-        return '#ff0000' /* Red */;
+        return "#ff0000" /* Red */;
       }
       if (keypointInd.left.indexOf(i) > -1) {
-        return '#00ff00' /* Green */;
+        return "#00ff00" /* Green */;
       }
       if (keypointInd.right.indexOf(i) > -1) {
-        return '#ffa500' /* Orange */;
+        return "#ffa500" /* Orange */;
       }
     });
 
@@ -267,7 +304,7 @@ export class Camera {
       this.scatterGL.updateDataset(dataset);
     }
     const connections = poseDetection.util.getAdjacentPairs(params.STATE.model);
-    const sequences = connections.map(pair => ({indices: pair}));
+    const sequences = connections.map((pair) => ({ indices: pair }));
     this.scatterGL.setSequences(sequences);
     this.scatterGLHasInitialized = true;
   }

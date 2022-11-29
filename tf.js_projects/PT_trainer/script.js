@@ -1,7 +1,12 @@
 // import * as poseDetection from '@tensorflow-models/pose-detection';
 
 import { Camera } from "./camera.js";
-import { STATE, BLAZEPOSE_CONFIG, MOVENET_CONFIG, VIDEO_SIZE } from "./params.js";
+import {
+  STATE,
+  BLAZEPOSE_CONFIG,
+  MOVENET_CONFIG,
+  VIDEO_SIZE,
+} from "./params.js";
 
 /* globals tf */
 
@@ -24,8 +29,10 @@ let poseClasses = 0;
 let sampleCounter = 0;
 
 let initializationTime = 0;
-let startInferenceTime, numInferences = 0;
-let inferenceTimeSum = 0, lastPanelUpdate = 0;
+let startInferenceTime,
+  numInferences = 0;
+let inferenceTimeSum = 0,
+  lastPanelUpdate = 0;
 
 let measurePose = true;
 let predict = false;
@@ -120,9 +127,7 @@ function createLocalModel(channelIn, channelOut) {
   model.add(
     tf.layers.dense({ inputShape: [channelIn], units: 128, activation: "relu" })
   );
-  model.add(
-    tf.layers.dense({ units: channelOut, activation: "softmax" })
-  );
+  model.add(tf.layers.dense({ units: channelOut, activation: "softmax" }));
 
   model.summary();
 
@@ -132,10 +137,7 @@ function createLocalModel(channelIn, channelOut) {
     optimizer: "adam",
     // Use the correct loss function. If 2 classes of data, must use binaryCrossentropy.
     // Else categoricalCrossentropy is used if more than 2 classes.
-    loss:
-    poseClasses === 2
-        ? "binaryCrossentropy"
-        : "categoricalCrossentropy",
+    loss: poseClasses === 2 ? "binaryCrossentropy" : "categoricalCrossentropy",
     // As this is a classification problem you can record accuracy in the logs too!
     metrics: ["accuracy"],
   });
@@ -221,13 +223,18 @@ function extrctPoseValues() {
     sampleCounter = 0;
 
     // draw this last pose to canvas for visualisation.
-    CANVAS_THUMB.width = 0.5*camera.video.videoWidth;
-    CANVAS_THUMB.height = 0.5*camera.video.videoHeight;
+    CANVAS_THUMB.width = 0.5 * camera.video.videoWidth;
+    CANVAS_THUMB.height = 0.5 * camera.video.videoHeight;
 
     currentThumbnail = camera.video;
-      CTX_THUMB.drawImage(
-        camera.video, 0, 0, 0.5*camera.video.videoWidth, 0.5*camera.video.videoHeight);
-      return;
+    CTX_THUMB.drawImage(
+      camera.video,
+      0,
+      0,
+      0.5 * camera.video.videoWidth,
+      0.5 * camera.video.videoHeight
+    );
+    return;
   }
 
   let poseValues = [];
@@ -243,7 +250,7 @@ function extrctPoseValues() {
   // collect real pose
   trainingDataOutputs.push(currentPoseID);
   sampleCounter++;
-  
+
   // console.log("pose_values", poseValues);
   DATA_TXT.innerText = "Collecting pose samples: " + sampleCounter;
 }
@@ -263,7 +270,7 @@ function endEstimatePosesStats() {
     inferenceTimeSum = 0;
     numInferences = 0;
     // stats.customFpsPanel.update(
-        // 1000.0 / averageInferenceTime, 120 /* maxValue */);
+    // 1000.0 / averageInferenceTime, 120 /* maxValue */);
     lastPanelUpdate = endInferenceTime;
     const currFPS = Math.floor(1000.0 / averageInferenceTime);
     FPS_TXT.innerText = "FPS: " + currFPS;
@@ -307,9 +314,9 @@ async function renderResult() {
   camera.drawCtx();
 
   // log the app initialization time only once.
-  if (currentPose == null){
+  if (currentPose == null) {
     initializationTime = Math.floor(performance.now() - initializationTime);
-    INIT_TXT.innerText =  "Initialization time: " + initializationTime + " ms";
+    INIT_TXT.innerText = "Initialization time: " + initializationTime + " ms";
     // console.log("initializationTime", initializationTime);
   }
 
@@ -327,7 +334,7 @@ async function renderResult() {
     camera.drawResults(poses);
   }
 
-  if (predict){
+  if (predict) {
     predictLoop(currentPose);
   }
 
@@ -399,14 +406,13 @@ function stopGatherLoop() {
   clearInterval(nIntervId);
   nIntervId = null;
   DATA_TXT.innerText =
-    "Collected "+sampleCounter+" samples for Pose "+currentPoseID;
+    "Collected " + sampleCounter + " samples for Pose " + currentPoseID;
 }
 
 /**
  * Once data collected actually perform the transfer learning.
  **/
 async function trainAndPredict() {
-
   // only create model when number of classes is known
   local_model = createLocalModel(featureLength, poseClasses);
 
@@ -445,30 +451,30 @@ function logProgress(epoch, logs) {
  *  Make live predictions from webcam once trained.
  **/
 function predictLoop(pose) {
-    tf.tidy(function () {
-      let poseValues = [];
+  tf.tidy(function () {
+    let poseValues = [];
 
-      for (let i = 0; i < pose.keypoints.length; i++) {
-        poseValues.push(currentPose.keypoints[i].x);
-        poseValues.push(currentPose.keypoints[i].y);
-      }
-      poseTensor = tf.tensor2d([poseValues]);
-      // console.log("poseTensor shape", poseTensor.shape);
+    for (let i = 0; i < pose.keypoints.length; i++) {
+      poseValues.push(currentPose.keypoints[i].x);
+      poseValues.push(currentPose.keypoints[i].y);
+    }
+    poseTensor = tf.tensor2d([poseValues]);
+    // console.log("poseTensor shape", poseTensor.shape);
 
-      // debugger;
-      // let prediction = local_model.predict(poseTensor.expandDims()).squeeze();
-      let prediction = local_model.predict(poseTensor).squeeze();
-      let highestIndex = prediction.argMax().arraySync();
-      let predictionArray = prediction.arraySync();
-      DATA_TXT.innerText =
-        "Prediction: Pose " +
-        highestIndex +
-        " with " +
-        Math.floor(predictionArray[highestIndex] * 100) +
-        "% confidence";
-    });
+    // debugger;
+    // let prediction = local_model.predict(poseTensor.expandDims()).squeeze();
+    let prediction = local_model.predict(poseTensor).squeeze();
+    let highestIndex = prediction.argMax().arraySync();
+    let predictionArray = prediction.arraySync();
+    DATA_TXT.innerText =
+      "Prediction: Pose " +
+      highestIndex +
+      " with " +
+      Math.floor(predictionArray[highestIndex] * 100) +
+      "% confidence";
+  });
 
-    // window.requestAnimationFrame(predictLoop);
+  // window.requestAnimationFrame(predictLoop);
 }
 
 /**
