@@ -1,7 +1,7 @@
 // import * as poseDetection from '@tensorflow-models/pose-detection';
 
 import { Camera } from "./camera.js";
-import { STATE, BLAZEPOSE_CONFIG, MOVENET_CONFIG } from "./params.js";
+import { STATE, BLAZEPOSE_CONFIG, MOVENET_CONFIG, VIDEO_SIZE } from "./params.js";
 
 /* globals tf */
 
@@ -11,7 +11,14 @@ const EXAMPLE_IMG = document.getElementById("exampleImg");
 const CANVAS = document.getElementById("testCanvas");
 const CTX = CANVAS.getContext("2d");
 
-let detector, camera, currentPose;
+const CANVAS_THUMB = document.getElementById("thumbnails");
+const CTX_THUMB = CANVAS_THUMB.getContext("2d");
+
+let detector, camera, currentThumbnail;
+let currentPose = null;
+let initializationTime = 0;
+let startInferenceTime, numInferences = 0;
+let inferenceTimeSum = 0, lastPanelUpdate = 0;
 let measurePose = true;
 let predict = false;
 let collectingPose = false;
@@ -24,7 +31,10 @@ let sampleCounter = 0;
 
 // loadAndRunModel();
 
-const STATUS = document.getElementById("status");
+const INIT_TXT = document.getElementById("init_time");
+const FPS_TXT = document.getElementById("framerate");
+const DATA_TXT = document.getElementById("data_status");
+
 const VIDEO = document.getElementById("video");
 const ENABLE_CAM_BUTTON = document.getElementById("enableCam");
 const RESET_BUTTON = document.getElementById("reset");
@@ -35,7 +45,7 @@ const MOBILE_NET_INPUT_WIDTH = 192;
 const MOBILE_NET_INPUT_HEIGHT = 192;
 const STOP_DATA_GATHER = -1;
 const CLASS_NAMES = [];
-const MIN_SAMPLES = 100;
+const MIN_SAMPLES = 50;
 
 // ENABLE_CAM_BUTTON.addEventListener("click", enableCam);
 TRAIN_BUTTON.addEventListener("click", trainAndPredict);
@@ -82,7 +92,7 @@ async function createDetector_old() {
 
   // model =
 
-  STATUS.innerText = "MoveNet loaded successfully!";
+  FPS_TXT.innerText = "MoveNet loaded successfully!";
 
   return await tf.loadGraphModel(MODEL_PATH, { fromTFHub: true });
 }
@@ -99,7 +109,7 @@ async function warmUpModel(model) {
   console.log("Warm up model:", answer);
   console.log("Warm up model:", answer.toString());
 
-  STATUS.innerText = "MoveNet warmed up!";
+  FPS_TXT.innerText = "MoveNet warmed up!";
 }
 
 function createLocalModel(channelIn, channelOut) {
@@ -154,7 +164,7 @@ function enableCam() {
       VIDEO.addEventListener("loadeddata", function () {
         videoPlaying = true;
         ENABLE_CAM_BUTTON.classList.add("removed");
-        STATUS.innerText = "camera loaded, button disappear";
+        FPS_TXT.innerText = "camera loaded, button disappear";
       });
     });
   } else {
@@ -202,7 +212,15 @@ async function calculateFeaturesOnCurrentFrame() {
 function extrctPoseValues() {
   if (sampleCounter >= MIN_SAMPLES) {
     stopGatherLoop();
-    return;
+
+    // draw this last pose to canvas for visualisation.
+    CANVAS_THUMB.width = 0.5*camera.video.videoWidth;
+    CANVAS_THUMB.height = 0.5*camera.video.videoHeight;
+
+    currentThumbnail = camera.video;
+      CTX_THUMB.drawImage(
+        camera.video, 0, 0, 0.5*camera.video.videoWidth, 0.5*camera.video.videoHeight);
+      return;
   }
 
   let poseValues = [];
@@ -225,7 +243,30 @@ function extrctPoseValues() {
   }
   
   console.log("pose_values", poseValues);
-  STATUS.innerText = "Collecting pose samples: " + trainingDataInputs.length;
+  DATA_TXT.innerText = "Collecting pose samples: " + trainingDataInputs.length;
+}
+
+function beginEstimatePosesStats() {
+  startInferenceTime = (performance || Date).now();
+}
+
+function endEstimatePosesStats() {
+  const endInferenceTime = (performance || Date).now();
+  inferenceTimeSum += endInferenceTime - startInferenceTime;
+  ++numInferences;
+
+  const panelUpdateMilliseconds = 1000;
+  if (endInferenceTime - lastPanelUpdate >= panelUpdateMilliseconds) {
+    const averageInferenceTime = inferenceTimeSum / numInferences;
+    inferenceTimeSum = 0;
+    numInferences = 0;
+    // stats.customFpsPanel.update(
+        // 1000.0 / averageInferenceTime, 120 /* maxValue */);
+    lastPanelUpdate = endInferenceTime;
+    const currFPS = Math.floor(1000.0 / averageInferenceTime);
+    FPS_TXT.innerText = "FPS: " + currFPS;
+    // console.log("currFPS", currFPS);
+  }
 }
 
 async function renderResult() {
@@ -243,7 +284,7 @@ async function renderResult() {
   // from a URL that does not exist).
   if (detector != null) {
     // FPS only counts the time it takes to finish estimatePoses.
-    // beginEstimatePosesStats();
+    beginEstimatePosesStats();
 
     // Detectors can throw errors, for example when using custom URLs that
     // contain a model that doesn't provide the expected output.
@@ -258,10 +299,17 @@ async function renderResult() {
       detector = null;
     }
 
-    // endEstimatePosesStats();
+    endEstimatePosesStats();
   }
 
   camera.drawCtx();
+
+  // log the app initialization time only once.
+  if (currentPose == null){
+    initializationTime = Math.floor(performance.now() - initializationTime);
+    INIT_TXT.innerText =  "Initialization time: " + initializationTime + " ms";
+    // console.log("initializationTime", initializationTime);
+  }
 
   // if current learning the new pose, put them into a list
   // if (collectPose && poses.length > 0) {
@@ -325,9 +373,9 @@ function dataGatherLoop() {
     // Increment counts of examples for user interface to show.
     examplesCount[gatherDataState]++;
 
-    STATUS.innerText = "";
+    // STATUS.innerText = "";
     for (let n = 0; n < CLASS_NAMES.length; n++) {
-      STATUS.innerText +=
+      INIT_TXT.innerText +=
         CLASS_NAMES[n] + " data count: " + examplesCount[n] + ". ";
     }
 
@@ -348,7 +396,7 @@ function stopGatherLoop() {
   // cancel interval and stop collecting data
   clearInterval(nIntervId);
   nIntervId = null;
-  STATUS.innerText =
+  DATA_TXT.innerText =
     "Data collection done -- samples: " + trainingDataInputs.length;
 }
 
@@ -407,7 +455,7 @@ function predictLoop(pose) {
       let prediction = model.predict(poseValues.expandDims()).squeeze();
       let highestIndex = prediction.argMax().arraySync();
       let predictionArray = prediction.arraySync();
-      STATUS.innerText =
+      DATA_TXT.innerText =
         "Prediction: " +
         highestIndex +
         " with " +
@@ -431,7 +479,7 @@ function reset() {
   }
   trainingDataInputs.splice(0);
   trainingDataOutputs.splice(0);
-  STATUS.innerText = "No data collected";
+  DATA_TXT.innerText = "No data collected";
 
   console.log("Tensors in memory: " + tf.memory().numTensors);
 }
@@ -472,6 +520,8 @@ async function createBlazePoseDetector() {
 }
 
 async function app() {
+  initializationTime = performance.now();
+
   camera = await Camera.setupCamera(STATE.camera);
   local_model = createLocalModel(featureLength, poseClasses);
   // detector = await createBlazePoseDetector();
