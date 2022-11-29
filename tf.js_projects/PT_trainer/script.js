@@ -16,18 +16,21 @@ const CTX_THUMB = CANVAS_THUMB.getContext("2d");
 
 let detector, camera, currentThumbnail;
 let currentPose = null;
+let poseTensor;
+let collectingPose = false;
+let currentPoseID = 0;
+let featureLength = 34;
+let poseClasses = 0;
+let sampleCounter = 0;
+
 let initializationTime = 0;
 let startInferenceTime, numInferences = 0;
 let inferenceTimeSum = 0, lastPanelUpdate = 0;
+
 let measurePose = true;
 let predict = false;
-let collectingPose = false;
 let rafId, nIntervId;
 let local_model;
-
-let featureLength = 34;
-let poseClasses = 2;
-let sampleCounter = 0;
 
 // loadAndRunModel();
 
@@ -45,7 +48,7 @@ const MOBILE_NET_INPUT_WIDTH = 192;
 const MOBILE_NET_INPUT_HEIGHT = 192;
 const STOP_DATA_GATHER = -1;
 const CLASS_NAMES = [];
-const MIN_SAMPLES = 50;
+const MIN_SAMPLES = 100;
 
 // ENABLE_CAM_BUTTON.addEventListener("click", enableCam);
 TRAIN_BUTTON.addEventListener("click", trainAndPredict);
@@ -210,8 +213,12 @@ async function calculateFeaturesOnCurrentFrame() {
 }
 
 function extrctPoseValues() {
+  // current pose got enough samples, reset for next
   if (sampleCounter >= MIN_SAMPLES) {
     stopGatherLoop();
+    currentPoseID += 1;
+    poseClasses += 1;
+    sampleCounter = 0;
 
     // draw this last pose to canvas for visualisation.
     CANVAS_THUMB.width = 0.5*camera.video.videoWidth;
@@ -233,17 +240,12 @@ function extrctPoseValues() {
   trainingDataInputs.push(poseValues);
   featureLength = poseValues.length;
 
-  if (collectingPose){
-    // collect real pose
-    trainingDataOutputs.push(1);
-    sampleCounter++;
-  } else {
-    // collect background
-    trainingDataOutputs.push(0);
-  }
+  // collect real pose
+  trainingDataOutputs.push(currentPoseID);
+  sampleCounter++;
   
-  console.log("pose_values", poseValues);
-  DATA_TXT.innerText = "Collecting pose samples: " + trainingDataInputs.length;
+  // console.log("pose_values", poseValues);
+  DATA_TXT.innerText = "Collecting pose samples: " + sampleCounter;
 }
 
 function beginEstimatePosesStats() {
@@ -397,13 +399,16 @@ function stopGatherLoop() {
   clearInterval(nIntervId);
   nIntervId = null;
   DATA_TXT.innerText =
-    "Data collection done -- samples: " + trainingDataInputs.length;
+    "Collected "+sampleCounter+" samples for Pose "+currentPoseID;
 }
 
 /**
  * Once data collected actually perform the transfer learning.
  **/
 async function trainAndPredict() {
+
+  // only create model when number of classes is known
+  local_model = createLocalModel(featureLength, poseClasses);
 
   predict = false;
   tf.util.shuffleCombo(trainingDataInputs, trainingDataOutputs);
@@ -412,12 +417,13 @@ async function trainAndPredict() {
 
   let outputsAsTensor = tf.tensor1d(trainingDataOutputs, "int32");
   let oneHotOutputs = tf.oneHot(outputsAsTensor, poseClasses);
+  debugger;
   let inputsAsTensor = tf.stack(trainingDataInputs);
 
   let results = await local_model.fit(inputsAsTensor, oneHotOutputs, {
     shuffle: true,
-    batchSize: 5,
-    epochs: 10,
+    batchSize: 10,
+    epochs: 100,
     callbacks: { onEpochEnd: logProgress },
   });
 
@@ -426,9 +432,6 @@ async function trainAndPredict() {
   inputsAsTensor.dispose();
 
   predict = true;
-  debugger;
-
-  // predictLoop();
 }
 
 /**
@@ -450,13 +453,15 @@ function predictLoop(pose) {
         poseValues.push(currentPose.keypoints[i].y);
       }
       poseTensor = tf.tensor2d([poseValues]);
-      console.log("poseTensor shape", poseTensor.shape);
+      // console.log("poseTensor shape", poseTensor.shape);
 
-      let prediction = model.predict(poseValues.expandDims()).squeeze();
+      // debugger;
+      // let prediction = local_model.predict(poseTensor.expandDims()).squeeze();
+      let prediction = local_model.predict(poseTensor).squeeze();
       let highestIndex = prediction.argMax().arraySync();
       let predictionArray = prediction.arraySync();
       DATA_TXT.innerText =
-        "Prediction: " +
+        "Prediction: Pose " +
         highestIndex +
         " with " +
         Math.floor(predictionArray[highestIndex] * 100) +
@@ -523,7 +528,6 @@ async function app() {
   initializationTime = performance.now();
 
   camera = await Camera.setupCamera(STATE.camera);
-  local_model = createLocalModel(featureLength, poseClasses);
   // detector = await createBlazePoseDetector();
   detector = await createMoveNetDetector();
 
