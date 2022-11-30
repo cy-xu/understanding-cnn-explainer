@@ -36,3 +36,8 @@ button {
   font-size: 150%;
   margin-top: -10px;
 }
+
+#thumbnails canvas {
+  -webkit-transform: scaleX(-1); 
+  transform: scaleX(-1);
+}

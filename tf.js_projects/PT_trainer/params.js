@@ -20,6 +20,26 @@
 export const DEFAULT_LINE_WIDTH = 2;
 export const DEFAULT_RADIUS = 4;
 
+export const key_points_names = {
+  0: "nose",
+  1: "left_eye",
+  2: "right_eye",
+  3: "left_ear",
+  4: "right_ear",
+  5: "left_shoulder",
+  6: "right_shoulder",
+  7: "left_elbow",
+  8: "right_elbow",
+  9: "left_wrist",
+  10: "right_wrist",
+  11: "left_hip",
+  12: "right_hip",
+  13: "left_knee",
+  14: "right_knee",
+  15: "left_ankle",
+  16: "right_ankle",
+};
+
 export const VIDEO_SIZE = {
   "640 X 480": { width: 640, height: 480 },
   "640 X 360": { width: 640, height: 360 },

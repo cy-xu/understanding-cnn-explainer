@@ -6,6 +6,7 @@ import {
   BLAZEPOSE_CONFIG,
   MOVENET_CONFIG,
   VIDEO_SIZE,
+  key_points_names,
 } from "./params.js";
 
 /* globals tf */
@@ -17,7 +18,6 @@ const CANVAS = document.getElementById("testCanvas");
 const CTX = CANVAS.getContext("2d");
 
 const CANVAS_THUMB = document.getElementById("thumbnails");
-const CTX_THUMB = CANVAS_THUMB.getContext("2d");
 
 let detector, camera, currentThumbnail;
 let currentPose = null;
@@ -29,10 +29,10 @@ let poseClasses = 0;
 let sampleCounter = 0;
 
 let initializationTime = 0;
-let startInferenceTime,
-  numInferences = 0;
-let inferenceTimeSum = 0,
-  lastPanelUpdate = 0;
+let startInferenceTime;
+let numInferences = 0;
+let inferenceTimeSum = 0;
+let lastPanelUpdate = 0;
 
 let measurePose = true;
 let predict = false;
@@ -55,7 +55,7 @@ const MOBILE_NET_INPUT_WIDTH = 192;
 const MOBILE_NET_INPUT_HEIGHT = 192;
 const STOP_DATA_GATHER = -1;
 const CLASS_NAMES = [];
-const MIN_SAMPLES = 100;
+const MIN_SAMPLES = 10;
 
 // ENABLE_CAM_BUTTON.addEventListener("click", enableCam);
 TRAIN_BUTTON.addEventListener("click", trainAndPredict);
@@ -125,8 +125,11 @@ async function warmUpModel(model) {
 function createLocalModel(channelIn, channelOut) {
   let model = tf.sequential();
   model.add(
-    tf.layers.dense({ inputShape: [channelIn], units: 128, activation: "relu" })
+    tf.layers.dense({ inputShape: [channelIn], units: 128, activation: "sigmoid" })
   );
+  // model.add(
+  //   tf.layers.dense({ inputShape: [128], units: 128, activation: "relu" })
+  // );
   model.add(tf.layers.dense({ units: channelOut, activation: "softmax" }));
 
   model.summary();
@@ -218,22 +221,39 @@ function extrctPoseValues() {
   // current pose got enough samples, reset for next
   if (sampleCounter >= MIN_SAMPLES) {
     stopGatherLoop();
+
+    // draw this last pose to canvas for visualisation.
+    var newCanvas = document.createElement("canvas");
+    newCanvas.width = 0.33 * camera.video.videoWidth;
+    newCanvas.height = 0.33 * camera.video.videoHeight;
+
+    var ctx = newCanvas.getContext("2d");
+
+    currentThumbnail = camera.video;
+    ctx.drawImage(
+      camera.video,
+      0,
+      0,
+      camera.video.videoWidth,
+      camera.video.videoHeight,
+      0,
+      0,
+      0.33 * camera.video.videoWidth,
+      0.33 * camera.video.videoHeight
+    );
+
+    var text = document.createElement("p")
+    text.innerText = "Pose " + currentPoseID;
+
+    if (currentPoseID > 0){
+      CANVAS_THUMB.appendChild(newCanvas);
+      CANVAS_THUMB.appendChild(text);
+    }
+
     currentPoseID += 1;
     poseClasses += 1;
     sampleCounter = 0;
 
-    // draw this last pose to canvas for visualisation.
-    CANVAS_THUMB.width = 0.5 * camera.video.videoWidth;
-    CANVAS_THUMB.height = 0.5 * camera.video.videoHeight;
-
-    currentThumbnail = camera.video;
-    CTX_THUMB.drawImage(
-      camera.video,
-      0,
-      0,
-      0.5 * camera.video.videoWidth,
-      0.5 * camera.video.videoHeight
-    );
     return;
   }
 
@@ -325,6 +345,17 @@ async function renderResult() {
   if (poses.length > 0) {
     // poses[0].keypoints
     currentPose = poses[0];
+
+    // for debugging
+    // debugger;
+
+    // console.log("score", currentPose.score.toString());
+    // for (let i = 0; i < currentPose.keypoints.length; i++) {
+    //   console.log("key point: ", i, key_points_names[i]);
+    //   console.log("x", currentPose.keypoints[i].x);
+    //   console.log("y", currentPose.keypoints[i].y);
+    //   // debugger;
+    // }
   }
 
   // The null check makes sure the UI is not in the middle of changing to a
@@ -351,8 +382,9 @@ async function drawPoseOnFrame() {
       let y = pose[0][0][i][0];
       let x = pose[0][0][i][1];
       let score = pose[0][0][i][2];
-      // console.log("x", x.toString());
-      // console.log("y", y.toString());
+      console.log("x", x.toString());
+      console.log("y", y.toString());
+      debugger;
 
       CTX.fillStyle = "#00ff00";
       CTX.beginPath();
