@@ -28,6 +28,13 @@ let featureLength = 34;
 let poseClasses = 0;
 let sampleCounter = 0;
 
+let confidenceHistory = [];
+let averageConfidence = 0;
+let poseBuffer = [];
+let poseBufferSize = 500;
+let buffered_pose = -1;
+let poseInProcess = -1;
+
 let initializationTime = 0;
 let startInferenceTime;
 let numInferences = 0;
@@ -92,6 +99,71 @@ let trainingDataInputs = [];
 let trainingDataOutputs = [];
 let examplesCount = [];
 
+//Profiling function
+let profile_app = false;
+
+if (profile_app) {
+  // 1. Import the library
+  const jsProfiler = require("js-profiler");
+
+  // 2. Run the profiler
+  jsProfiler.run().then((report) => {
+    console.log(JSON.stringify(report, null, 2));
+  });
+}
+
+// count down timer and audio
+
+const TIMER_TXT = document.getElementById("countdown-status");
+const timeoutAudio = document.getElementById("timeout_audio");
+
+timeoutAudio.src = "assets/Bleep-SoundBible.com-1927126940.mp3";
+timeoutAudio.load();
+
+var remainingTime = 30;
+var timer;
+var timerStopped = true;
+
+const startTimer = () => {
+  if (timerStopped) {
+    timerStopped = false;
+    TIMER_TXT.innerHTML = remainingTime;
+    timer = setInterval(renderTime, 1000);
+    timeoutAudio.play();
+  }
+};
+
+const stopTimer = () => {
+  timerStopped = true;
+  if (timer) {
+    clearInterval(timer);
+  }
+  resetTimer();
+};
+
+const resetTimer = () => {
+  timerStopped = true;
+  clearInterval(timer);
+  remainingTime = 30;
+  TIMER_TXT.innerHTML = remainingTime;
+  timeoutAudio.play();
+};
+
+const renderTime = () => {
+  // decement time
+  remainingTime -= 1;
+  // render count on the screen
+  TIMER_TXT.innerHTML = remainingTime;
+  // timeout on zero
+  if (remainingTime === 0) {
+    timerStopped = true;
+    clearInterval(timer);
+    // Play audio on timeout
+    timeoutAudio.play();
+    remainingTime = 30;
+  }
+};
+
 /**
  * Loads the MobileNet model and warms it up so ready for use.
  **/
@@ -125,7 +197,11 @@ async function warmUpModel(model) {
 function createLocalModel(channelIn, channelOut) {
   let model = tf.sequential();
   model.add(
-    tf.layers.dense({ inputShape: [channelIn], units: 128, activation: "sigmoid" })
+    tf.layers.dense({
+      inputShape: [channelIn],
+      units: 128,
+      activation: "sigmoid",
+    })
   );
   // model.add(
   //   tf.layers.dense({ inputShape: [128], units: 128, activation: "relu" })
@@ -242,10 +318,10 @@ function extrctPoseValues() {
       0.33 * camera.video.videoHeight
     );
 
-    var text = document.createElement("p")
+    var text = document.createElement("p");
     text.innerText = "Pose " + currentPoseID;
 
-    if (currentPoseID > 0){
+    if (currentPoseID > 0) {
       CANVAS_THUMB.appendChild(newCanvas);
       CANVAS_THUMB.appendChild(text);
     }
@@ -384,7 +460,6 @@ async function drawPoseOnFrame() {
       let score = pose[0][0][i][2];
       console.log("x", x.toString());
       console.log("y", y.toString());
-      debugger;
 
       CTX.fillStyle = "#00ff00";
       CTX.beginPath();
@@ -455,7 +530,6 @@ async function trainAndPredict() {
 
   let outputsAsTensor = tf.tensor1d(trainingDataOutputs, "int32");
   let oneHotOutputs = tf.oneHot(outputsAsTensor, poseClasses);
-  debugger;
   let inputsAsTensor = tf.stack(trainingDataInputs);
 
   let results = await local_model.fit(inputsAsTensor, oneHotOutputs, {
@@ -479,6 +553,28 @@ function logProgress(epoch, logs) {
   console.log("Data for epoch " + epoch, logs);
 }
 
+function avgConfidence(confidence) {
+  // average the past 10 confidence values
+  if (confidenceHistory.length > 10) {
+    confidenceHistory.shift();
+  }
+  confidenceHistory.push(confidence);
+  return confidenceHistory.reduce((a, b) => a + b) / confidenceHistory.length;
+}
+
+function maintainSamePose(currPose, buffer){
+  // calculate the majority in the buffer
+  var pose_set = new Set(buffer);
+
+  for (let pose of pose_set) {
+    if (buffer.filter(x => x == pose).length > buffer.length / 2) {
+      buffered_pose = pose;
+    }
+  }
+
+  return buffered_pose;
+}
+
 /**
  *  Make live predictions from webcam once trained.
  **/
@@ -498,11 +594,33 @@ function predictLoop(pose) {
     let prediction = local_model.predict(poseTensor).squeeze();
     let highestIndex = prediction.argMax().arraySync();
     let predictionArray = prediction.arraySync();
+    
+    let confidence = Math.floor(predictionArray[highestIndex] * 100);
+    averageConfidence = avgConfidence(confidence);
+
+    // a buffer to maintain the same pose for a while
+    if (poseBuffer.length > poseBufferSize) {
+      poseBuffer.shift();
+    }
+    poseBuffer.push(highestIndex);
+
+    // start timer if a pose that is not 0 (background) is detected
+    if (highestIndex > 0 && timerStopped && averageConfidence > 50) {
+      startTimer();
+      setInterval(maintainSamePose, poseBufferSize, highestIndex, poseBuffer);
+      poseInProcess = highestIndex;
+    }
+
+    if (!timerStopped && poseInProcess != buffered_pose) {
+        stopTimer();
+        clearInterval(maintainSamePose);
+    }
+
     DATA_TXT.innerText =
       "Prediction: Pose " +
       highestIndex +
       " with " +
-      Math.floor(predictionArray[highestIndex] * 100) +
+       confidence +
       "% confidence";
   });
 
@@ -568,13 +686,23 @@ async function app() {
   camera = await Camera.setupCamera(STATE.camera);
   // detector = await createBlazePoseDetector();
   detector = await createMoveNetDetector();
+  resetTimer();
 
   tf.engine().startScope();
   // do your thing
   // warmUpModel(movenet);
 
   // drawPoseOnFrame();
-  renderResult();
+  if (profile_app) {
+    var startTime = performance.now();
+    renderResult();
+    var endTime = performance.now();
+    console.log(
+      "The function call createMoveNetDetector took ${endTime - startTime} Milli seconds"
+    );
+  } else {
+    renderResult();
+  }
 
   tf.engine().endScope();
 }

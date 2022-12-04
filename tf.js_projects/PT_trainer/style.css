@@ -28,7 +28,11 @@ button {
   display: none;
 }
 
-#init_time, #framerate {
+.status_text {
+  font-size: 150%;
+}
+
+#init_time {
   font-size:150%;
 }
 

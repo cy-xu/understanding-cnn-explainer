@@ -28,7 +28,7 @@
   <body>
     <div class="container">
       <div class="row">
-        <div class="col-8">
+        <div class="col">
           <h1>Personal PT Trainer</h1>
           <div class="row">
             <div class="col-8">
@@ -36,7 +36,9 @@
               <p id="data_status"></p>
             </div>
             <div class="col-4">
-              <p id="framerate"></p>
+              <p id="framerate" class="status_text"></p>
+              <p class="status_text">Timer: <span id="countdown-status" style="color: red"></span></p>
+              <audio id="timeout_audio"></audio>
             </div>
           </div>
         </div>
@@ -58,8 +60,7 @@
             ></video>
           </div>
         </div>
-        <div id="thumbnails" class="col-4">
-        </div>
+        <div id="thumbnails" class="col-4"></div>
       </div>
       <div class="row" style="padding-top: 20px">
         <div class="col-8">
