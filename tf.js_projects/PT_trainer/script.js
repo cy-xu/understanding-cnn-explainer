@@ -62,7 +62,7 @@ const MOBILE_NET_INPUT_WIDTH = 192;
 const MOBILE_NET_INPUT_HEIGHT = 192;
 const STOP_DATA_GATHER = -1;
 const CLASS_NAMES = [];
-const MIN_SAMPLES = 10;
+const MIN_SAMPLES = 50;
 
 // ENABLE_CAM_BUTTON.addEventListener("click", enableCam);
 TRAIN_BUTTON.addEventListener("click", trainAndPredict);
@@ -566,13 +566,17 @@ function maintainSamePose(currPose, buffer){
   // calculate the majority in the buffer
   var pose_set = new Set(buffer);
 
+  // only one possibility, quick return
+  if (pose_set.size == 1){
+    buffered_pose = currPose;
+  }
+
+  // more than one possibility, calculate the majority
   for (let pose of pose_set) {
     if (buffer.filter(x => x == pose).length > buffer.length / 2) {
       buffered_pose = pose;
     }
   }
-
-  return buffered_pose;
 }
 
 /**
@@ -604,16 +608,21 @@ function predictLoop(pose) {
     }
     poseBuffer.push(highestIndex);
 
-    // start timer if a pose that is not 0 (background) is detected
-    if (highestIndex > 0 && timerStopped && averageConfidence > 50) {
-      startTimer();
+    // start the function once and let it run
+    if (poseInProcess < 0) {
       setInterval(maintainSamePose, poseBufferSize, highestIndex, poseBuffer);
-      poseInProcess = highestIndex;
+    }
+
+    // start timer if a pose that is not 0 (background) is detected
+    if (buffered_pose > 0 && timerStopped && averageConfidence > 50) {
+      startTimer();
+      // setInterval(maintainSamePose, poseBufferSize, highestIndex, poseBuffer);
+      poseInProcess = buffered_pose;
     }
 
     if (!timerStopped && poseInProcess != buffered_pose) {
         stopTimer();
-        clearInterval(maintainSamePose);
+        // clearInterval(maintainSamePose);
     }
 
     DATA_TXT.innerText =
